@@ -9,7 +9,7 @@ const handleNavigation = (role: "buyer" | "seller") => {
   // navigate(`/${role}/dashboard`);
 };
 
-export function RoleSelectionPage() {
+export default function RoleSelectionPage() {
   return (
     <section className="bg-vista-bg relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-12 md:px-6">
       {/* Decorative Background Elements (Optional, based on your Hero style) */}
@@ -59,7 +59,7 @@ export function RoleSelectionPage() {
             role="seller"
             title="Property Seller"
             subtitle="Brokers & Owners"
-            description="Access dashboard analytics, upload property assets, and configure AI virtual staging."
+            description="Access dashboard, upload property assets, and configure AI virtual staging."
             icon={<Building2 className="h-8 w-8 text-white" />}
             delay={0.3}
             onClick={() => handleNavigation("seller")}

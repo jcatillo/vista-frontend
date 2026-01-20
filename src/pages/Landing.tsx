@@ -8,7 +8,7 @@ import { EchoSection } from "../components/sections/echo";
 import { MarkSection } from "../components/sections/mark";
 import { CostSection } from "../components/sections/cost";
 
-export function Landing() {
+export default function Landing() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   return (

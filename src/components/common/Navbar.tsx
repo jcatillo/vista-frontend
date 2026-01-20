@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 interface NavItem {
   href: string;
   label: string;
@@ -12,6 +14,8 @@ const navItems: NavItem[] = [
 ];
 
 export function Navbar() {
+  const navigate = useNavigate();
+
   return (
     <nav className="bg-vista-bg/80 fixed top-0 right-(--scrollbar-width,17px) left-0 z-50 border-b border-white/20 backdrop-blur-sm">
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 md:py-6">
@@ -29,7 +33,10 @@ export function Navbar() {
             </a>
           ))}
         </div>
-        <button className="bg-vista-primary hover:bg-opacity-90 rounded-full px-4 py-2 text-sm font-medium text-white transition-all md:px-6 md:py-2.5">
+        <button
+          onClick={() => navigate("/get-started")}
+          className="bg-vista-primary hover:bg-opacity-90 rounded-full px-4 py-2 text-sm font-medium text-white transition-all md:px-6 md:py-2.5"
+        >
           Get Started
         </button>
       </div>
