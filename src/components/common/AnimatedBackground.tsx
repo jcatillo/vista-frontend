@@ -16,7 +16,7 @@ export function AnimatedBackground() {
         }}
       />
       <motion.div
-        className="bg-vista-accent/10 pointer-events-none fixed right-5 bottom-40 -z-10 h-64 w-64 rounded-full opacity-50 blur-3xl md:right-10 md:h-[500px] md:w-[500px]"
+        className="bg-vista-accent/10 pointer-events-none fixed right-5 bottom-40 -z-10 h-64 w-64 rounded-full opacity-50 blur-3xl md:right-10 md:h-125 md:w-125"
         animate={{
           x: [0, -25, 0],
           scale: [1, 1.1, 1],

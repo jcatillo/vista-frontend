@@ -32,7 +32,7 @@ export function StagingSection() {
               alt="Modern Interior"
               className="h-full w-full object-cover"
             />
-            <div className="from-vista-primary/20 absolute inset-0 bg-gradient-to-r to-transparent" />
+            <div className="from-vista-primary/20 absolute inset-0 bg-linear-to-r to-transparent" />
           </div>
         </motion.div>
 

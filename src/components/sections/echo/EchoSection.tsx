@@ -60,7 +60,7 @@ export function EchoSection() {
           transition={{
             duration: 0.6,
           }}
-          className="relative flex min-h-[400px] items-center justify-center"
+          className="relative flex min-h-100 items-center justify-center"
         >
           <div className="bg-vista-primary relative flex h-48 w-48 items-center justify-center rounded-full shadow-2xl md:h-64 md:w-64">
             <Mic className="h-16 w-16 text-white md:h-24 md:w-24" />
@@ -88,7 +88,7 @@ export function EchoSection() {
             {voiceCommands.map((command, idx) => (
               <motion.div
                 key={idx}
-                className="border-vista-accent/20 absolute max-w-[140px] rounded-2xl border bg-white/90 px-2.5 py-2 shadow-lg backdrop-blur-sm sm:max-w-[160px] sm:px-3 md:max-w-[200px] md:px-4 md:py-3"
+                className="border-vista-accent/20 absolute max-w-35 rounded-2xl border bg-white/90 px-2.5 py-2 shadow-lg backdrop-blur-sm sm:max-w-40 sm:px-3 md:max-w-50 md:px-4 md:py-3"
                 style={{
                   top: idx === 0 ? "10%" : idx === 1 ? "50%" : "80%",
                   left: idx === 0 ? "0%" : idx === 1 ? "auto" : "5%",

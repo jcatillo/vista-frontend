@@ -23,7 +23,7 @@ export function BeforeAfterSlider({
   } = useBeforeAfterSlider(50);
 
   return (
-    <div className="relative h-[350px] w-full overflow-hidden rounded-3xl shadow-2xl sm:h-[400px] md:h-[500px]">
+    <div className="relative h-87.5 w-full overflow-hidden rounded-3xl shadow-2xl sm:h-100 md:h-125">
       {/* Before/After Container */}
       <div
         ref={sliderContainerRef}

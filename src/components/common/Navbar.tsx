@@ -13,7 +13,7 @@ const navItems: NavItem[] = [
 
 export function Navbar() {
   return (
-    <nav className="bg-vista-bg/80 fixed top-0 right-[var(--scrollbar-width,17px)] left-0 z-50 border-b border-white/20 backdrop-blur-sm">
+    <nav className="bg-vista-bg/80 fixed top-0 right-(--scrollbar-width,17px) left-0 z-50 border-b border-white/20 backdrop-blur-sm">
       <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 md:py-6">
         <div className="font-display text-vista-primary text-xl font-bold md:text-2xl">
           Vista
