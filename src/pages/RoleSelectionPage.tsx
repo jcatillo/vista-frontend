@@ -1,15 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Building2, Search, ArrowRight, Sparkles } from "lucide-react";
-
-// Placeholder for your navigation logic
-// In a real app, you would use: const navigate = useNavigate();
-const handleNavigation = (role: "buyer" | "seller") => {
-  console.log(`Navigating to ${role} dashboard...`);
-  // navigate(`/${role}/dashboard`);
-};
+import { useNavigate } from "react-router-dom";
 
 export default function RoleSelectionPage() {
+  const navigate = useNavigate();
+  const handleNavigation = (role: "buyer" | "seller") => navigate(`/${role}`);
+
   return (
     <section className="bg-vista-bg relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-12 md:px-6">
       {/* Decorative Background Elements (Optional, based on your Hero style) */}
