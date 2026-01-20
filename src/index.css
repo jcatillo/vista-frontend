@@ -23,7 +23,7 @@
 /* 4. Global element styling using the variables defined above */
 @layer base {
   body {
-    @apply bg-vista-bg text-vista-text font-sans;
+    @apply bg-vista-bg text-vista-text font-sans overflow-x-hidden;
   }
 
   h1,

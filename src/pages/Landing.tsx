@@ -16,8 +16,6 @@ export function Landing() {
     target: containerRef,
     offset: ["start start", "end end"],
   });
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, -150]);
   const rotate = useTransform(scrollYProgress, [0, 0.25], [0, 15]);
   const furnitureItems = [
     {
@@ -67,14 +65,14 @@ export function Landing() {
   return (
     <div
       ref={containerRef}
-      className="h-screen snap-y snap-mandatory overflow-y-scroll scroll-smooth"
+      className="h-screen snap-y snap-mandatory overflow-x-hidden overflow-y-scroll scroll-smooth"
     >
       {/* Animated Background Shapes - Fixed Position */}
       <motion.div
-        className="bg-vista-surface pointer-events-none fixed top-20 left-10 -z-10 h-96 w-96 rounded-full opacity-60 blur-3xl"
+        className="bg-vista-surface pointer-events-none fixed top-20 left-10 -z-10 h-48 w-48 rounded-full opacity-60 blur-3xl md:h-96 md:w-96"
         animate={{
-          x: [0, 100, 0],
-          y: [0, 50, 0],
+          x: [0, 50, 0],
+          y: [0, 25, 0],
         }}
         transition={{
           duration: 20,
@@ -83,10 +81,10 @@ export function Landing() {
         }}
       />
       <motion.div
-        className="bg-vista-accent/10 pointer-events-none fixed right-10 bottom-40 -z-10 h-[500px] w-[500px] rounded-full opacity-50 blur-3xl"
+        className="bg-vista-accent/10 pointer-events-none fixed right-5 bottom-40 -z-10 h-64 w-64 rounded-full opacity-50 blur-3xl md:right-10 md:h-125 md:w-125"
         animate={{
-          x: [0, -50, 0],
-          scale: [1, 1.2, 1],
+          x: [0, -25, 0],
+          scale: [1, 1.1, 1],
         }}
         transition={{
           duration: 15,
@@ -96,12 +94,12 @@ export function Landing() {
       />
 
       {/* Navigation - Fixed */}
-      <nav className="bg-vista-bg/80 fixed top-0 right-0 left-0 z-50 border-b border-white/20 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 md:py-6">
+      <nav className="bg-vista-bg/80 fixed top-0 right-(--scrollbar-width,17px) left-0 z-50 border-b border-white/20 backdrop-blur-sm">
+        <div className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8 md:py-6">
           <div className="font-display text-vista-primary text-xl font-bold md:text-2xl">
             Vista
           </div>
-          <div className="text-vista-text hidden gap-6 text-sm font-medium lg:flex xl:gap-8">
+          <div className="text-vista-text absolute left-1/2 hidden -translate-x-1/2 gap-6 text-sm font-medium lg:flex xl:gap-8">
             <a
               href="#hero"
               className="hover:text-vista-accent transition-colors"
@@ -112,25 +110,25 @@ export function Landing() {
               href="#staging"
               className="hover:text-vista-accent transition-colors"
             >
-              Staging
+              AI Staging
             </a>
             <a
               href="#echo"
               className="hover:text-vista-accent transition-colors"
             >
-              Echo
+              Voice Design
             </a>
             <a
               href="#mark"
               className="hover:text-vista-accent transition-colors"
             >
-              Mark
+              AI Assistant
             </a>
             <a
               href="#cost"
               className="hover:text-vista-accent transition-colors"
             >
-              Pricing
+              Cost Estimates
             </a>
           </div>
           <button className="bg-vista-primary hover:bg-opacity-90 rounded-full px-4 py-2 text-sm font-medium text-white transition-all md:px-6 md:py-2.5">
@@ -142,9 +140,9 @@ export function Landing() {
       {/* Hero Section - 100vh */}
       <section
         id="hero"
-        className="bg-vista-bg relative flex h-screen snap-start items-center justify-center px-4 pt-20 md:px-6"
+        className="bg-vista-bg relative flex min-h-screen snap-start items-center justify-center px-4 py-24 md:h-screen md:px-6 md:py-20"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 md:gap-12 lg:grid-cols-2">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <motion.div
             initial={{
               opacity: 0,
@@ -158,13 +156,15 @@ export function Landing() {
               duration: 0.8,
               ease: "easeOut",
             }}
-            className="z-10"
+            className="z-10 text-center lg:text-left"
           >
-            <h1 className="text-vista-primary mb-4 text-4xl leading-tight font-bold md:mb-6 md:text-5xl lg:text-7xl">
+            <h1 className="text-vista-primary mb-4 text-3xl leading-tight font-bold md:mb-6 md:text-5xl lg:text-6xl xl:text-7xl">
               See the future of your home—
-              <span className="text-vista-accent">before you buy.</span>
+              <span className="text-vista-accent block sm:inline">
+                before you buy.
+              </span>
             </h1>
-            <p className="text-vista-text/80 mb-6 max-w-lg text-base leading-relaxed md:mb-8 md:text-xl">
+            <p className="text-vista-text/80 mx-auto mb-6 max-w-lg text-base leading-relaxed md:mb-8 md:text-lg lg:mx-0 lg:text-xl">
               Vista is a next-generation real estate platform. Visualize,
               customize, and understand a property with AI-driven clarity.
             </p>
@@ -175,66 +175,62 @@ export function Landing() {
               whileTap={{
                 scale: 0.95,
               }}
-              className="bg-vista-accent shadow-vista-accent/30 flex items-center gap-2 rounded-full px-6 py-3 text-base font-bold text-white shadow-lg md:px-8 md:py-4 md:text-lg"
+              className="bg-vista-accent shadow-vista-accent/30 mx-auto flex items-center gap-2 rounded-full px-6 py-3 text-base font-bold text-white shadow-lg md:px-8 md:py-4 md:text-lg lg:mx-0"
             >
               Start Virtual Tour{" "}
               <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
             </motion.button>
           </motion.div>
 
-          <div className="relative flex h-[400px] items-center justify-center md:h-[500px]">
+          <div className="sm:h-100h-[500px] relative flex h-87.5 items-center justify-center">
             {/* Floating UI Elements */}
             <motion.div
-              style={{
-                y: y2,
-              }}
-              className="shadow-glass absolute top-5 right-5 z-20 rounded-xl border border-white/50 bg-white/80 p-3 backdrop-blur-md md:top-10 md:right-10 md:p-4"
+              className="shadow-glass absolute -top-4 -right-4 z-20 rounded-xl border border-white/50 bg-white/80 p-2 backdrop-blur-md sm:-top-2 sm:right-0 sm:p-3 md:top-4 md:right-4 md:p-4"
               initial={{
                 opacity: 0,
-                scale: 0.8,
+                y: -20,
               }}
               animate={{
                 opacity: 1,
-                scale: 1,
+                y: 0,
               }}
               transition={{
                 delay: 0.4,
+                duration: 0.6,
               }}
             >
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-                <span className="text-vista-primary text-sm font-medium md:text-base">
+              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500 sm:h-2 sm:w-2" />
+                <span className="text-vista-primary text-xs font-medium sm:text-sm md:text-base">
                   Echo Active
                 </span>
               </div>
             </motion.div>
 
             <motion.div
-              style={{
-                y: y1,
-              }}
-              className="shadow-glass absolute bottom-10 left-0 z-20 rounded-xl border border-white/50 bg-white/80 p-3 backdrop-blur-md md:bottom-20 md:p-4"
+              className="shadow-glass absolute -bottom-4 -left-4 z-20 rounded-xl border border-white/50 bg-white/80 p-2 backdrop-blur-md sm:-bottom-2 sm:left-0 sm:p-3 md:bottom-4 md:left-4 md:p-4"
               initial={{
                 opacity: 0,
-                scale: 0.8,
+                y: 20,
               }}
               animate={{
                 opacity: 1,
-                scale: 1,
+                y: 0,
               }}
               transition={{
                 delay: 0.6,
+                duration: 0.6,
               }}
             >
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="bg-vista-accent/20 rounded-lg p-1.5 md:p-2">
-                  <DollarSign className="text-vista-accent h-4 w-4 md:h-5 md:w-5" />
+              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                <div className="bg-vista-accent/20 rounded-lg p-1 sm:p-1.5 md:p-2">
+                  <DollarSign className="text-vista-accent h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5" />
                 </div>
                 <div>
-                  <div className="text-vista-text/60 text-xs">
+                  <div className="text-vista-text/60 text-[10px] sm:text-xs">
                     Renovation Cost
                   </div>
-                  <div className="text-vista-primary text-sm font-bold md:text-base">
+                  <div className="text-vista-primary text-xs font-bold sm:text-sm md:text-base">
                     Low Estimate
                   </div>
                 </div>
@@ -304,9 +300,9 @@ export function Landing() {
       {/* AI Staging Section - 100vh */}
       <section
         id="staging"
-        className="bg-vista-bg relative flex h-screen snap-start items-center justify-center px-4 md:px-6"
+        className="bg-vista-bg relative flex min-h-screen snap-start items-center justify-center px-4 py-20 md:h-screen md:px-6"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-16">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
           <motion.div
             initial={{
               opacity: 0,
@@ -331,7 +327,7 @@ export function Landing() {
                 alt="Modern Interior"
                 className="h-full w-full object-cover"
               />
-              <div className="from-vista-primary/20 absolute inset-0 bg-gradient-to-r to-transparent" />
+              <div className="from-vista-primary/20 absolute inset-0 bg-linear-to-r to-transparent" />
               <div className="absolute bottom-4 left-4 rounded-lg bg-white/90 px-3 py-1.5 shadow-lg backdrop-blur md:bottom-6 md:left-6 md:px-4 md:py-2">
                 <span className="text-vista-primary text-xs font-bold md:text-sm">
                   Before / After
@@ -376,9 +372,9 @@ export function Landing() {
       {/* Echo Voice Section - 100vh */}
       <section
         id="echo"
-        className="bg-vista-bg relative flex h-screen snap-start items-center justify-center px-4 md:px-6"
+        className="bg-vista-bg relative flex min-h-screen snap-start items-center justify-center px-4 py-20 md:h-screen md:px-6"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-16">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
           <motion.div
             initial={{
               opacity: 0,
@@ -425,7 +421,7 @@ export function Landing() {
             transition={{
               duration: 0.6,
             }}
-            className="relative flex min-h-[400px] items-center justify-center"
+            className="min-h-100ms-center relative flex justify-center"
           >
             <div className="bg-vista-primary relative flex h-48 w-48 items-center justify-center rounded-full shadow-2xl md:h-64 md:w-64">
               <Mic className="h-16 w-16 text-white md:h-24 md:w-24" />
@@ -449,15 +445,15 @@ export function Landing() {
             </div>
 
             {/* Speech Bubbles */}
-            <div className="pointer-events-none absolute inset-0">
+            <div className="pointer-events-none absolute inset-0 hidden sm:block">
               {voiceCommands.map((command, idx) => (
                 <motion.div
                   key={idx}
-                  className="border-vista-accent/20 absolute max-w-[160px] rounded-2xl border bg-white/90 px-3 py-2 shadow-lg backdrop-blur-sm md:max-w-[200px] md:px-4 md:py-3"
+                  className="border-vista-accent/20 absolute max-w-35 rounded-2xl border bg-white/90 px-2.5 py-2 shadow-lg backdrop-blur-sm sm:max-w-40 sm:px-3 md:max-w-50 md:px-4 md:py-3"
                   style={{
                     top: idx === 0 ? "10%" : idx === 1 ? "50%" : "80%",
-                    left: idx === 0 ? "-5%" : idx === 1 ? "auto" : "5%",
-                    right: idx === 1 ? "-5%" : "auto",
+                    left: idx === 0 ? "0%" : idx === 1 ? "auto" : "5%",
+                    right: idx === 1 ? "0%" : "auto",
                   }}
                   initial={{
                     opacity: 0,
@@ -491,9 +487,9 @@ export function Landing() {
       {/* Mark AI Chatbot Section - 100vh */}
       <section
         id="mark"
-        className="bg-vista-bg relative flex h-screen snap-start items-center justify-center px-4 md:px-6"
+        className="bg-vista-bg relative flex min-h-screen snap-start items-center justify-center px-4 py-20 md:h-screen md:px-6"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-16">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
           <motion.div
             initial={{
               opacity: 0,
@@ -646,9 +642,9 @@ export function Landing() {
       {/* Cost Section - 100vh */}
       <section
         id="cost"
-        className="bg-vista-bg relative flex h-screen snap-start items-center justify-center px-4 md:px-6"
+        className="bg-vista-bg relative flex min-h-screen snap-start items-center justify-center px-4 py-20 md:h-screen md:px-6"
       >
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-16">
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
           <motion.div
             initial={{
               opacity: 0,
