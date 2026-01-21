@@ -5,7 +5,13 @@ import { useNavigate } from "react-router-dom";
 
 export default function RoleSelectionPage() {
   const navigate = useNavigate();
-  const handleNavigation = (role: "buyer" | "seller") => navigate(`/${role}`);
+  const handleNavigation = (role: "buyer" | "seller") => {
+    if (role === "seller") {
+      navigate("/seller");
+    } else {
+      navigate(`/${role}`);
+    }
+  };
 
   return (
     <section className="bg-vista-bg relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-4 py-12 md:px-6">
