@@ -4,6 +4,10 @@ import { Maximize2, ChevronLeft, ChevronRight, Edit2, X, Plus, Trash2, ArrowUp, 
 import type { Property } from "../../../../data/properties";
 import { propertyDatabase } from "../../../../data/properties";
 
+/**
+ * Custom scrollbar styling for thumbnail image strip
+ * Uses webkit for Chrome/Safari compatibility with teal accent color
+ */
 const scrollbarStyles = `
   .property-image-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -30,30 +34,75 @@ interface PropertyDetailsImageProps {
   onUpdate?: (updated: Property) => void;
 }
 
+/**
+ * PropertyDetailsImage Component
+ * 
+ * Comprehensive image gallery with editing capabilities.
+ * 
+ * View Mode Features:
+ * - Display current image with navigation arrows
+ * - Thumbnail strip at bottom for quick navigation
+ * - Image counter (e.g., "1 / 6")
+ * - Expand button to fullscreen view
+ * - Edit button to enter management mode
+ * 
+ * Edit Mode Features:
+ * - Add images via URL input
+ * - Add images via local file upload (converted to base64 data URLs)
+ * - Rearrange images with up/down arrows
+ * - Delete unwanted images
+ * - Set thumbnail (which image displays first)
+ * - Visual indicator for current thumbnail selection
+ * - Save/Cancel buttons with validation
+ * 
+ * Data Persistence:
+ * - Changes saved to propertyDatabase[property.id]
+ * - Updates both 'images' array and 'image' (thumbnail)
+ * - Parent component synced via onUpdate callback
+ */
 export function PropertyDetailsImage({
   property,
   onImageExpanded,
   onUpdate,
 }: PropertyDetailsImageProps) {
+  // Current image index being displayed in gallery view
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // Toggle between view and edit modes
   const [isEditing, setIsEditing] = useState(false);
+  // Track async save operation
   const [isSaving, setIsSaving] = useState(false);
+  // Local editable array of image URLs (allows cancel without persisting)
   const [editImages, setEditImages] = useState<string[]>(
     property.images && property.images.length > 0 ? property.images : [property.image]
   );
+  // Index of the image to use as thumbnail
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
+  // Temp input for adding image via URL
   const [newImageUrl, setNewImageUrl] = useState("");
 
+  // Get display images (handle both single image and array formats)
   const images = property.images && property.images.length > 0 ? property.images : [property.image];
 
+  /**
+   * Navigate to previous image in gallery (loops to end)
+   */
   const goToPrevious = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
+  /**
+   * Navigate to next image in gallery (loops to start)
+   */
   const goToNext = () => {
     setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
+  /**
+   * Add image from URL input
+   * - Validates URL is not empty
+   * - Appends to editImages array
+   * - Clears input field for next entry
+   */
   const handleAddImageUrl = () => {
     if (newImageUrl.trim()) {
       setEditImages([...editImages, newImageUrl]);
@@ -61,6 +110,12 @@ export function PropertyDetailsImage({
     }
   };
 
+  /**
+   * Add image from local file upload
+   * - Uses FileReader API to convert file to base64 data URL
+   * - Stores as data URL for persistence without server upload
+   * - Supports all image formats (jpg, png, gif, webp, etc.)
+   */
   const handleAddImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -73,6 +128,11 @@ export function PropertyDetailsImage({
     }
   };
 
+  /**
+   * Delete image at specified index
+   * - Updates editImages array
+   * - Adjusts thumbnailIndex if needed (prevents out of bounds)
+   */
   const handleDeleteImage = (idx: number) => {
     const newImages = editImages.filter((_, i) => i !== idx);
     setEditImages(newImages);
@@ -81,6 +141,11 @@ export function PropertyDetailsImage({
     }
   };
 
+  /**
+   * Move image up one position
+   * - Swaps with previous image using destructuring
+   * - Updates thumbnailIndex if moved image was thumbnail
+   */
   const handleMoveUp = (idx: number) => {
     if (idx > 0) {
       const newImages = [...editImages];
@@ -91,6 +156,11 @@ export function PropertyDetailsImage({
     }
   };
 
+  /**
+   * Move image down one position
+   * - Swaps with next image using destructuring
+   * - Updates thumbnailIndex if moved image was thumbnail
+   */
   const handleMoveDown = (idx: number) => {
     if (idx < editImages.length - 1) {
       const newImages = [...editImages];
@@ -104,6 +174,7 @@ export function PropertyDetailsImage({
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
+    // Update propertyDatabase with new images array and selected thumbnail
     Object.assign(propertyDatabase[property.id], {
       images: editImages,
       image: editImages[thumbnailIndex],
@@ -113,6 +184,12 @@ export function PropertyDetailsImage({
     setIsEditing(false);
   };
 
+  /**
+   * Cancel edit mode and revert all changes
+   * - Resets editImages to original property images
+   * - Resets thumbnail index
+   * - Clears URL input field
+   */
   const handleCancel = () => {
     setEditImages(images);
     setThumbnailIndex(0);

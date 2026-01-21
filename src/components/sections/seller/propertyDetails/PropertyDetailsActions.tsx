@@ -10,14 +10,37 @@ interface PropertyDetailsActionsProps {
   onDelete?: () => void;
 }
 
+/**
+ * PropertyDetailsActions Component
+ * 
+ * Displays action buttons and stats sidebar for property management.
+ * Key features:
+ * - Share Listing button (placeholder for future implementation)
+ * - Delete Property with safety confirmation dialog
+ * - Displays property metrics: Views, Inquiries, Listing Date
+ * 
+ * Delete Flow:
+ * 1. User clicks "Delete Property" button
+ * 2. Confirmation dialog appears with warning message
+ * 3. On confirm: Property is removed from propertyDatabase
+ * 4. Callback triggers page redirect to properties list
+ */
 export function PropertyDetailsActions({
   property,
   onEditClick,
   onDelete,
 }: PropertyDetailsActionsProps) {
+  // Track if delete confirmation dialog is visible
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  // Track async delete operation to disable button during deletion
   const [isDeleting, setIsDeleting] = useState(false);
 
+  /**
+   * Handles confirmed property deletion
+   * - Removes property from propertyDatabase using delete operator
+   * - Includes 300ms delay for smooth UX feedback
+   * - Triggers onDelete callback for parent navigation
+   */
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -27,6 +50,10 @@ export function PropertyDetailsActions({
     onDelete?.();
   };
 
+  /**
+   * Render confirmation dialog when delete is triggered
+   * Shows warning message and action buttons
+   */
   if (showDeleteConfirm) {
     return (
       <motion.div

@@ -9,11 +9,33 @@ interface PropertyDetailsStatsProps {
   onUpdate?: (updated: Property) => void;
 }
 
+/**
+ * PropertyDetailsStats Component
+ * 
+ * Displays and manages property statistics in a "Quick Information" section.
+ * Supports inline editing mode where sellers can update all 6 key stats:
+ * - Bedrooms, Bathrooms, Storeys, Floor Area, Lot Area, Year Built
+ * 
+ * Features:
+ * - View mode: Shows stats in a responsive grid (4 columns on desktop, 2 on tablet)
+ * - Edit mode: Provides form inputs for easy updates
+ * - Data persistence: Changes saved to propertyDatabase and synced with parent via onUpdate
+ * - Responsive design: Handles last-row alignment for uneven stat counts
+ */
 export function PropertyDetailsStats({ property, onUpdate }: PropertyDetailsStatsProps) {
+  // Track edit mode state
   const [isEditing, setIsEditing] = useState(false);
+  // Track async save operation to disable button during save
   const [isSaving, setIsSaving] = useState(false);
+  // Local form state for editing (allows cancel without persisting)
   const [formData, setFormData] = useState<Property>(property);
 
+  /**
+   * Saves edited stats to the database
+   * - Uses Object.assign to mutate propertyDatabase directly
+   * - Calls onUpdate callback to sync parent component state
+   * - Includes 300ms delay for smooth UX feedback
+   */
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
@@ -23,11 +45,18 @@ export function PropertyDetailsStats({ property, onUpdate }: PropertyDetailsStat
     setIsEditing(false);
   };
 
+  /**
+   * Cancels edit mode and reverts form data to original property values
+   */
   const handleCancel = () => {
     setFormData(property);
     setIsEditing(false);
   };
 
+  /**
+   * Array of stat objects with icon, label, and value for display
+   * Uses lucide-react icons for visual consistency
+   */
   const stats = [
     { icon: Bed, label: "Bedrooms", value: property.bedrooms, key: "bedrooms" },
     { icon: Bath, label: "Bathrooms", value: property.bathrooms, key: "bathrooms" },
@@ -37,6 +66,13 @@ export function PropertyDetailsStats({ property, onUpdate }: PropertyDetailsStat
     { icon: Calendar, label: "Built", value: property.yearBuilt, key: "yearBuilt" },
   ];
 
+  /**
+   * Calculates responsive column spans for last row items in the grid
+   * Ensures proper alignment when stat count is not divisible by 4
+   * 
+   * Example: 6 stats → 4 in first row + 2 in second row
+   * Last 2 items should be md:col-span-2 to center them
+   */
   const getColSpan = (idx: number) => {
     const lastRowCount = stats.length % 4 || 4;
     const isLastRowItem = idx >= stats.length - lastRowCount;
@@ -47,6 +83,7 @@ export function PropertyDetailsStats({ property, onUpdate }: PropertyDetailsStat
     }
     return "";
   };
+
 
   if (isEditing) {
     return (
