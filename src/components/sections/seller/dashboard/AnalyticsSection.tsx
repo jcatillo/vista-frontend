@@ -161,7 +161,7 @@ export function AnalyticsSection() {
         <div className="shadow-soft rounded-2xl border border-white/50 bg-white p-5 md:p-6">
           <div className="mb-4">
             <h3 className="text-vista-primary text-base font-bold md:text-lg">
-              Listing Status
+              Property Status
             </h3>
             <p className="text-vista-text/60 text-xs md:text-sm">
               Distribution overview

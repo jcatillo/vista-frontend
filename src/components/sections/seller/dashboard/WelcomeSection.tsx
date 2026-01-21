@@ -3,7 +3,7 @@ import { Building2, Eye, Layers, TrendingUp } from "lucide-react";
 
 const quickStats = [
   {
-    label: "Total Listings",
+    label: "Total Properties",
     value: "12",
     icon: Building2,
     change: "+2 this month",
@@ -18,7 +18,7 @@ const quickStats = [
     label: "AI Staging Used",
     value: "8",
     icon: Layers,
-    change: "67% of listings",
+    change: "67% of properties",
   },
   {
     label: "Inquiries",
@@ -39,11 +39,11 @@ export function WelcomeSection() {
         className="mb-8 md:mb-12"
       >
         <h1 className="text-vista-primary mb-2 text-2xl font-bold md:text-4xl">
-          Welcome back, Demo User
+          Welcome back, Johnson Smith
         </h1>
         <p className="text-vista-text/70 text-sm md:text-base">
-          Manage your property listings and leverage AI-powered tools to attract
-          more buyers.
+          Manage your properties and leverage AI-powered tools to attract more
+          buyers.
         </p>
       </motion.div>
 

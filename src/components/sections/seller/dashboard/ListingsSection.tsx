@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
   Eye,
@@ -6,51 +7,31 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { allProperties } from "../../../../data/properties";
 
 interface PropertyListing {
   id: string;
   name: string;
   address: string;
-  status: "active" | "pending" | "draft";
+  status: "Active" | "Pending" | "Sold";
   views: number;
   image: string;
   price: string;
 }
 
-const mockProperties: PropertyListing[] = [
-  {
-    id: "1",
-    name: "Modern Loft Apartment",
-    address: "123 Vista Avenue, Cebu City",
-    status: "active",
-    views: 245,
-    image:
-      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=400",
-    price: "₱4,500,000",
-  },
-  {
-    id: "2",
-    name: "Seaside Villa",
-    address: "456 Coastal Road, Lapu-Lapu",
-    status: "pending",
-    views: 128,
-    image:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=400",
-    price: "₱12,800,000",
-  },
-  {
-    id: "3",
-    name: "Urban Studio",
-    address: "789 Business Park, Mandaue",
-    status: "draft",
-    views: 0,
-    image:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=400",
-    price: "₱2,200,000",
-  },
-];
+const mockProperties: PropertyListing[] = allProperties.map((p) => ({
+  id: p.id,
+  name: p.name,
+  address: p.address,
+  status: p.status,
+  views: p.views,
+  image: p.image,
+  price: p.price,
+}));
 
 export function ListingsSection() {
+  const navigate = useNavigate();
+  
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
       {/* Section Header */}
@@ -63,13 +44,16 @@ export function ListingsSection() {
       >
         <div>
           <h2 className="text-vista-primary text-xl font-bold md:text-2xl">
-            Your Listings
+            Your Properties
           </h2>
           <p className="text-vista-text/60 text-sm">
             Manage and monitor your property portfolio
           </p>
         </div>
-        <button className="text-vista-accent hover:text-vista-primary flex items-center gap-1 text-sm font-medium transition-colors">
+        <button 
+          onClick={() => navigate("/seller/properties")}
+          className="text-vista-accent hover:text-vista-primary flex items-center gap-1 text-sm font-medium transition-colors"
+        >
           View All
           <BarChart3 className="h-4 w-4" />
         </button>
@@ -82,6 +66,7 @@ export function ListingsSection() {
             key={property.id}
             property={property}
             delay={idx * 0.1}
+            onNavigate={() => navigate(`/seller/properties/${property.id}`)}
           />
         ))}
       </div>
@@ -92,24 +77,25 @@ export function ListingsSection() {
 interface PropertyCardProps {
   property: PropertyListing;
   delay: number;
+  onNavigate?: () => void;
 }
 
-function PropertyCard({ property, delay }: PropertyCardProps) {
+function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
   const statusConfig = {
-    active: {
+    Active: {
       icon: CheckCircle2,
-      color: "text-green-600 bg-green-50",
+      color: "text-white bg-green-600",
       label: "Active",
     },
-    pending: {
+    Pending: {
       icon: Clock,
-      color: "text-amber-600 bg-amber-50",
+      color: "text-white bg-amber-600",
       label: "Pending Review",
     },
-    draft: {
+    Sold: {
       icon: AlertCircle,
-      color: "text-gray-500 bg-gray-100",
-      label: "Draft",
+      color: "text-white bg-gray-500",
+      label: "Sold",
     },
   };
 
@@ -123,6 +109,7 @@ function PropertyCard({ property, delay }: PropertyCardProps) {
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay }}
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      onClick={() => onNavigate?.()}
       className="group cursor-pointer"
     >
       <div className="shadow-soft h-full overflow-hidden rounded-2xl border border-white/50 bg-white transition-shadow duration-300 hover:shadow-xl">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, Mail, User, LogOut, Settings } from "lucide-react";
+import { LayoutDashboard, Home, Mail, User, LogOut, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function SellerNavbar() {
@@ -22,7 +22,7 @@ export function SellerNavbar() {
 
   const navItems = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/seller/dashboard" },
-    { label: "Listings", icon: Package, href: "/seller/listings" },
+    { label: "Properties", icon: Home, href: "/seller/properties" },
     { label: "Messages", icon: Mail, href: "/seller/messages" },
   ];
 

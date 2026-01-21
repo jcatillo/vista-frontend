@@ -1,0 +1,151 @@
+import { motion } from "framer-motion";
+import { Edit2, Share2, Trash2, AlertTriangle } from "lucide-react";
+import { useState } from "react";
+import type { Property } from "../../../../data/properties";
+import { propertyDatabase } from "../../../../data/properties";
+
+interface PropertyDetailsActionsProps {
+  property: Property;
+  onEditClick?: () => void;
+  onDelete?: () => void;
+}
+
+/**
+ * PropertyDetailsActions Component
+ * 
+ * Displays action buttons and stats sidebar for property management.
+ * Key features:
+ * - Share Listing button (placeholder for future implementation)
+ * - Delete Property with safety confirmation dialog
+ * - Displays property metrics: Views, Inquiries, Listing Date
+ * 
+ * Delete Flow:
+ * 1. User clicks "Delete Property" button
+ * 2. Confirmation dialog appears with warning message
+ * 3. On confirm: Property is removed from propertyDatabase
+ * 4. Callback triggers page redirect to properties list
+ */
+export function PropertyDetailsActions({
+  property,
+  onEditClick,
+  onDelete,
+}: PropertyDetailsActionsProps) {
+  // Track if delete confirmation dialog is visible
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  // Track async delete operation to disable button during deletion
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  /**
+   * Handles confirmed property deletion
+   * - Removes property from propertyDatabase using delete operator
+   * - Includes 300ms delay for smooth UX feedback
+   * - Triggers onDelete callback for parent navigation
+   */
+  const handleDeleteConfirm = async () => {
+    setIsDeleting(true);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    delete propertyDatabase[property.id];
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+    onDelete?.();
+  };
+
+  /**
+   * Render confirmation dialog when delete is triggered
+   * Shows warning message and action buttons
+   */
+  if (showDeleteConfirm) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2 }}
+        className="lg:col-span-1"
+      >
+        <div className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8 sticky top-24 space-y-4">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="bg-red-100 rounded-full p-3">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-vista-primary">Delete Property?</h3>
+              <p className="text-sm text-vista-text/70 mt-2">
+                Are you sure you want to delete this property listing? This action cannot be undone.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <button
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-red-600 hover:bg-red-700 text-white font-medium transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? "Deleting..." : "Yes, Delete Property"}
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 font-medium transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="lg:col-span-1"
+    >
+      <div className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8 sticky top-24 space-y-4">
+        {/* Stats */}
+        <div className="space-y-3 border-b border-vista-surface pb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-vista-text/70 text-sm">Views</span>
+            <span className="text-vista-primary font-bold">{property.views}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-vista-text/70 text-sm">Inquiries</span>
+            <span className="text-vista-primary font-bold">
+              {property.inquiries}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-vista-text/70 text-sm">Listed</span>
+            <span className="text-vista-primary font-bold text-xs">
+              {new Date(property.listingDate).toLocaleDateString()}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="space-y-3">
+          
+          <button className="border border-vista-surface/30 hover:border-vista-accent hover:bg-vista-accent/5 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-vista-primary font-medium transition-colors">
+            <Share2 className="h-4 w-4" />
+            Share Listing
+          </button>
+          <button className="border border-red-200 hover:bg-red-50 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-red-600 font-medium transition-colors"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Property
+          </button>
+        </div>
+
+        {/* Info Box */}
+        <div className="bg-vista-surface/20 rounded-xl p-4">
+          <p className="text-vista-text/70 text-xs">
+            Last updated: <strong>2 hours ago</strong>
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
