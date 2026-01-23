@@ -129,20 +129,6 @@ export function PropertiesGrid() {
                   alt={property.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
-                {/* Status Badge */}
-                <div
-                  className={`absolute top-3 right-3 flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ${
-                    statusColors[property.status as keyof typeof statusColors]
-                  }`}
-                >
-                  {(() => {
-                    const StatusIcon =
-                      statusIcons[property.status as keyof typeof statusIcons];
-                    return <StatusIcon className="h-3.5 w-3.5" />;
-                  })()}
-                  {statusLabels[property.status as keyof typeof statusLabels] ||
-                    property.status}
-                </div>
               </div>
 
               {/* Content */}

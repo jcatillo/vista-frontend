@@ -193,24 +193,7 @@ export function AnalyticsSection() {
                 <span className="text-vista-text/60 text-xs">Total</span>
               </div>
             </div>
-            {/* Legend */}
-            <div className="flex flex-wrap justify-center gap-3">
-              {[
-                { status: "Active", count: 7, color: "#2fbfa1" },
-                { status: "Pending", count: 3, color: "#f59e0b" },
-                { status: "Draft", count: 2, color: "#9ca3af" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <div
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-vista-text/80 text-xs font-medium">
-                    {item.status} ({item.count})
-                  </span>
-                </div>
-              ))}
-            </div>
+          
           </div>
         </div>
       </motion.div>
