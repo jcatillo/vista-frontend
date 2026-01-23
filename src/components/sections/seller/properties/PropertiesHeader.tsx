@@ -2,13 +2,46 @@ import { motion } from "framer-motion";
 import { Search, Plus, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 import AddPropertyModal from "./modal/AddPropertyModal";
+import { createProperty } from "../../../../services/propertyService";
+import type { PropertyFormData } from "./modal/interface";
+import type { PropertyFormInput } from "../../../../types/property";
 
-export function PropertiesHeader() {
+interface PropertiesHeaderProps {
+  onPropertyCreated?: () => void;
+}
+
+export function PropertiesHeader({ onPropertyCreated }: PropertiesHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const handlePropertySubmit = (propertyData: any) => {
-    console.log("New property:", propertyData);
-    // Add API call here to save property
+  const handlePropertySubmit = async (propertyData: PropertyFormData) => {
+    // Convert PropertyFormData to match API expectations
+    const selectedThumbnail =
+      propertyData.selectedThumbnailIndex !== null &&
+      propertyData.regularImages[propertyData.selectedThumbnailIndex]
+        ? propertyData.regularImages[propertyData.selectedThumbnailIndex]
+        : propertyData.regularImages.length > 0
+          ? propertyData.regularImages[0]
+          : undefined;
+
+    const formInput: PropertyFormInput = {
+      ...propertyData,
+      // Use selected thumbnail or first image as fallback
+      image: selectedThumbnail,
+      // Keep as strings, let backend handle conversion
+      // Add required fields
+      status: "draft" as const,
+      user_id: "user_123456", // TODO: Get from auth context
+    } as PropertyFormInput;
+
+    console.log("Submitting property:", formInput);
+    await createProperty(formInput);
+    console.log("Property created successfully");
+    setSuccessMessage("Property created successfully!");
+    onPropertyCreated?.();
+
+    // Clear success message after 5 seconds
+    setTimeout(() => setSuccessMessage(null), 5000);
   };
 
   return (
@@ -18,6 +51,18 @@ export function PropertiesHeader() {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handlePropertySubmit}
       />
+
+      {/* Success Message */}
+      {successMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-4 right-4 z-50 rounded-lg bg-green-500 px-6 py-3 text-white shadow-lg"
+        >
+          {successMessage}
+        </motion.div>
+      )}
 
       <section className="bg-vista-bg/50 border-vista-surface/20 border-b backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">

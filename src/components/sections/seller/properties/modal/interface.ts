@@ -9,6 +9,7 @@ export interface PropertyFormData {
   priceNegotiable: boolean;
   regularImages: File[];
   panoramicImages: File[];
+  selectedThumbnailIndex: number | null; // Index of selected thumbnail from regularImages
   bedrooms: string;
   bathrooms: string;
   floorArea: string;
@@ -52,11 +53,10 @@ export interface PropertyFormData {
   developerBio: string;
 }
 
-
 export interface AddPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (propertyData: PropertyFormData) => void;
+  onSubmit: (propertyData: PropertyFormData) => void | Promise<void>;
 }
 
 export interface StepProps {
@@ -71,4 +71,6 @@ export interface StepProps {
     field: "regularImages" | "panoramicImages",
     index: number
   ) => void;
+  onSelectThumbnail: (index: number | null) => void;
+  validationErrors: Record<string, string>;
 }

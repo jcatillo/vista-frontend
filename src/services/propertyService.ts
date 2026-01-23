@@ -43,8 +43,11 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
       );
       return;
     }
-    // Python: `if 'image' in files:`
-    if (key === "mainImage" && value instanceof File) {
+
+    if (key === "image" && value instanceof File) {
+      console.log(
+        `Appending image as 'image': File(${value.name}, ${value.size} bytes)`
+      );
       formData.append("image", value);
       return;
     }
@@ -84,7 +87,15 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
 export async function createProperty(
   data: PropertyFormInput
 ): Promise<Property> {
+  console.log("Creating property with data keys:", Object.keys(data));
+  console.log("Creating property with data:", data);
+  console.log("mainImage type:", data.mainImage?.constructor?.name);
+  console.log("mainImage instanceof File:", data.mainImage instanceof File);
+
   const formData = createFormData(data);
+
+  console.log("FormData entries:");
+
 
   // Hardcode user_id or retrieve from your Auth Context if needed
   // formData.append('user_id', 'CURRENT_USER_ID');
@@ -95,6 +106,8 @@ export async function createProperty(
   });
 
   const responseData = await response.json();
+
+  console.log(`Create Property Response:`, responseData);
 
   if (!response.ok || !responseData.success) {
     throw new Error(responseData.error?.message || "Failed to create property");

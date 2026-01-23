@@ -2,7 +2,11 @@ import { Image, Upload, X } from "lucide-react";
 import type { StepProps } from "./interface";
 import { motion } from "framer-motion";
 
-export function ImageStep({ formData, onFileUpload, onRemoveImage }: StepProps) {
+export function ImageStep({
+  formData,
+  onFileUpload,
+  onRemoveImage,
+}: StepProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}

@@ -1,62 +1,55 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
 import {
-  Eye,
-  Home,
-  MapPin,
-  AlertCircle,
-  Trash2,
-  Edit2,
-} from "lucide-react";
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useMemo,
+} from "react";
+import { Eye, Home, MapPin, AlertCircle, Trash2, Edit2 } from "lucide-react";
 import { getSellerProperties } from "../../../../services/propertyService";
 import type { SellerPropertyItem } from "../../../../types/property";
 import { generatePropertyStats } from "../../../../utils/randomUtils";
 
-// const statusColors = {
-//   published: "bg-green-600 text-white",
-//   pending_review: "bg-amber-600 text-white",
-//   draft: "bg-gray-500 text-white",
-//   rejected: "bg-red-600 text-white",
-// };
+interface PropertiesGridProps {
+  refetchTrigger?: number;
+}
 
-// const statusIcons = {
-//   published: CheckCircle2,
-//   pending_review: Clock,
-//   draft: AlertCircle,
-//   rejected: AlertCircle,
-// };
+export interface PropertiesGridRef {
+  refetch: () => void;
+}
 
-// const statusLabels = {
-//   published: "Published",
-//   pending_review: "Pending Review",
-//   draft: "Draft",
-//   rejected: "Rejected",
-// };
-
-export function PropertiesGrid() {
+export const PropertiesGrid = forwardRef<
+  PropertiesGridRef,
+  PropertiesGridProps
+>(({ refetchTrigger }, ref) => {
   const navigate = useNavigate();
   const [properties, setProperties] = useState<SellerPropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchProperties = async () => {
-      try {
-        setLoading(true);
-        const response = await getSellerProperties();
-        setProperties(response.properties);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load properties"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const response = await getSellerProperties();
+      setProperties(response.properties);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load properties"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useImperativeHandle(ref, () => ({
+    refetch: fetchProperties,
+  }));
+
+  useEffect(() => {
     fetchProperties();
-  }, []);
+  }, [refetchTrigger]);
 
   // Generate random data only once using useMemo
   const displayProperties = useMemo(() => {
@@ -204,4 +197,6 @@ export function PropertiesGrid() {
       )}
     </section>
   );
-}
+});
+
+PropertiesGrid.displayName = "PropertiesGrid";

@@ -199,29 +199,93 @@ export interface Property {
 }
 
 // --- Form Input Interface ---
-// This handles the File objects before they are uploaded.
-// It omits system fields like 'createdAt', 'updatedAt', 'status' (if backend defaults it).
+// Matches the API form data structure from the curl example
 
-export interface PropertyFormInput extends Omit<
-  Property,
-  | "id"
-  | "createdAt"
-  | "updatedAt"
-  | "images"
-  | "image"
-  | "regularImageCount"
-  | "panoramicImageCount"
-  | "panoramicImages"
-  | "createdBy"
-  | "status"
-> {
-  // Overrides for File Handling
+export interface PropertyFormInput {
+  // Basic Information
+  name: string;
+  propertyType: PropertyType;
+  listingType: ListingType;
+  address: string;
+  latitude?: string;
+  longitude?: string;
+
+  // Pricing
+  price: string;
+  priceNegotiable: boolean;
+
+  // Images
   regularImages: File[];
   panoramicImages: File[];
-  mainImage?: File | null;
+  image?: File;
 
-  // Optional: Allow status override if admin
+  // Property Specifications
+  bedrooms?: string;
+  bathrooms?: string;
+  floorArea?: string;
+  lotArea?: string;
+
+  // Parking
+  parkingAvailable: boolean;
+  parkingSlots?: string;
+
+  // Building Details
+  floorLevel?: string;
+  storeys?: string;
+  furnishing?: FurnishingStatus;
+  condition?: PropertyCondition;
+  yearBuilt?: string;
+
+  // Property Description
+  description?: string;
+
+  // Features & Amenities
+  amenities: string[];
+  interiorFeatures: string[];
+  buildingAmenities: string[];
+  utilities: string[];
+
+  // Nearby
+  nearbySchools: NearbyEstablishment[];
+  nearbyHospitals: NearbyEstablishment[];
+  nearbyMalls: NearbyEstablishment[];
+  nearbyTransport: NearbyEstablishment[];
+  nearbyOffices: NearbyEstablishment[];
+
+  // Legal & Financial
+  ownershipStatus?: string;
+  taxStatus?: string;
+  associationDues?: string;
+
+  // Terms & Policies
+  terms: string[];
+  availabilityDate?: string;
+  minimumLeasePeriod?: string;
+  petPolicy?: string;
+  smokingPolicy?: string;
+
+  // Agent Information
+  agentName?: string;
+  agentPhone?: string;
+  agentEmail?: string;
+  agentExperience?: string;
+  agentBio?: string;
+
+  // Developer Information
+  hasDeveloper?: boolean;
+  developerName?: string;
+  developerWebsite?: string;
+  developerPhone?: string;
+  developerEmail?: string;
+  developerYears?: string;
+  developerBio?: string;
+
+  // Images
+  mainImage?: File;
+
+  // System fields
   status?: PropertyStatus;
+  user_id: string;
 }
 
 // --- Seller Dashboard Interfaces ---
