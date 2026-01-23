@@ -13,6 +13,7 @@ export interface Property {
   inquiries: number;
   image: string;
   images: string[];
+  panoramicImages?: Array<{ url: string; title?: string; description?: string }>;
   bedrooms: number;
   bathrooms: number;
   floorArea: string; // sqm
@@ -108,6 +109,18 @@ export const propertyDatabase: Record<string, Property> = {
       "https://images.unsplash.com/photo-1512917774080-9a485d94ffe2?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop",
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+    ],
+    panoramicImages: [
+      { 
+        url: "https://vista-resources.s3.ap-southeast-2.amazonaws.com/CSP-S+UCMN+LOGO+(1).jpg",
+        title: "Ocean View Panorama",
+        description: "360° view of the pristine beachfront"
+      },
+      { 
+        url: "https://vista-resources.s3.ap-southeast-2.amazonaws.com/CSP-S+UCMN+LOGO+(1).jpg",
+        title: "Living Room Vista",
+        description: "Panoramic view from the main living area"
+      },
     ],
     bedrooms: 4,
     bathrooms: 3,

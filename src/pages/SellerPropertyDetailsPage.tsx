@@ -16,6 +16,7 @@ import {
   PropertyDetailsAgent,
   PropertyDetailsDeveloper,
   PropertyDetailsActions,
+  PropertyDetailsPanoramicViews,
 } from "../components/sections/seller/propertyDetails";
 import type { Property, PropertyImage } from "../types/property";
 import { getProperty } from "../services/propertyService";
@@ -117,10 +118,11 @@ export default function PropertyDetailsPage() {
                 onUpdate={handlePropertyUpdate}
               />
 
-              <PropertyDetailsAbout
-                property={property}
-                onUpdate={handlePropertyUpdate}
-              />
+              <PropertyDetailsPanoramicViews property={property} onUpdate={handlePropertyUpdate} />
+
+              <PropertyDetailsAbout property={property} onUpdate={handlePropertyUpdate} />
+              
+              <PropertyDetailsStats property={property} onUpdate={handlePropertyUpdate} />
 
               <PropertyDetailsStats
                 property={property}

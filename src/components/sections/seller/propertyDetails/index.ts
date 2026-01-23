@@ -16,3 +16,4 @@ export { PropertyDetailsAgent } from "./PropertyDetailsAgent";
 export { PropertyDetailsDeveloper } from "./PropertyDetailsDeveloper";
 export { PropertyDetailsRatings } from "./PropertyDetailsRatings";
 export { PropertyDetailsActions } from "./PropertyDetailsActions";
+export { PropertyDetailsPanoramicViews } from "./PropertyDetailsPanoramicViews";
