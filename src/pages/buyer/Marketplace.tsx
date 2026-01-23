@@ -220,7 +220,7 @@ export default function Marketplace() {
                         ease: "easeOut",
                         delay: index * 0.1,
                       }}
-                      className="w-[280px] flex-shrink-0"
+                      className="w-70 shrink-0"
                     >
                       <PropertyCard property={property} />
                     </motion.div>

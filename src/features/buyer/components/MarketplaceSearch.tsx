@@ -32,6 +32,7 @@ export function MarketplaceSearch({ onSearch }: MarketplaceSearchProps) {
     "Consolacion",
   ];
   const propertyTypes = ["House", "Condo", "Townhouse", "Apartment"];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const priceRanges = [
     { label: "Under ₱5M", min: 0, max: 5000000 },
     { label: "₱5M - ₱10M", min: 5000000, max: 10000000 },
@@ -307,7 +308,7 @@ export function MarketplaceSearch({ onSearch }: MarketplaceSearchProps) {
         {/* Search Button */}
         <button
           onClick={handleSearch}
-          className="bg-vista-primary hover:bg-opacity-90 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-white transition-colors"
+          className="bg-vista-primary hover:bg-opacity-90 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white transition-colors"
         >
           <Search className="h-4 w-4 font-bold" strokeWidth={3} />
         </button>
@@ -316,7 +317,7 @@ export function MarketplaceSearch({ onSearch }: MarketplaceSearchProps) {
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="ml-2 flex-shrink-0 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
+            className="ml-2 shrink-0 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
           >
             Clear All
           </button>
