@@ -153,13 +153,11 @@ function DeviceOrientationController() {
     
     // For VR box in landscape mode (phone horizontal):
     // - alpha (compass) controls left/right head turns (yaw)
-    // - gamma (calibrated to 0 at start) controls up/down head nods (pitch)
+    // - gamma controls up/down head nods (pitch) - when phone is horizontal
     
-    // Gamma is already calibrated to starting position (eye level = 0)
-    // Negate and offset: when gamma=0 (eye level), look straight ahead at walls
-    // Positive gamma (tilt up) = look up at ceiling
-    // Negative gamma (tilt down) = look down at floor
-    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
+    // Use gamma for pitch (nodding up/down)
+    // Clamp to prevent flipping at extremes
+    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 3, Math.PI / 3);
     const yaw = alphaRad;
     const roll = 0; // Ignore roll for cleaner VR experience
     
