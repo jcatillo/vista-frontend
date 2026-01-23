@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Calendar, PawPrint, Cigarette, Edit2, Check, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
@@ -15,7 +15,10 @@ export function PropertyDetailsAvailability({
 }: PropertyDetailsAvailabilityProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [formData, setFormData] = useState<Property>(property);
+  const [formData, setFormData] = useState<Property>(() => ({
+    ...property,
+    availabilityDate: property.availabilityDate || new Date().toISOString(),
+  }));
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -30,6 +33,11 @@ export function PropertyDetailsAvailability({
     setFormData(property);
     setIsEditing(false);
   };
+
+  const formattedDate = useMemo(() => {
+    const dateValue = formData.availabilityDate || new Date().toISOString();
+    return new Date(dateValue).toISOString().split("T")[0];
+  }, [formData.availabilityDate]);
 
   if (isEditing) {
     return (

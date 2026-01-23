@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star, Globe, Phone, Mail } from "lucide-react";
+import { Globe, Phone, Mail } from "lucide-react";
 import type { Property } from "../../../../types/property";
 
 interface PropertyDetailsDeveloperProps {
@@ -32,7 +32,7 @@ export function PropertyDetailsDeveloper({
             {developer.name}
           </h3>
 
-          {/* Rating */}
+          {/* Years in Business */}
           <div className="mt-2 flex items-center gap-2">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (

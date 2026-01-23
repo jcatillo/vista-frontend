@@ -57,7 +57,7 @@ export function PropertyDetailsRatings({
               buyer reviews and valuations
             </p>
             <p className="text-vista-text/60 mt-1 text-xs">
-              Based on market analysis and buyer satisfaction
+              Based on market analysis
             </p>
           </div>
         </div>

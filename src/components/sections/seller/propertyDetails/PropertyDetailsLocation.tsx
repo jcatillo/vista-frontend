@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Edit2, Check, X, Map as MapIcon } from "lucide-react";
 import { useState } from "react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsLocationProps {
