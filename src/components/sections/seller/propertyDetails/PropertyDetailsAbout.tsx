@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Edit2, Check, X } from "lucide-react";
 import { useState } from "react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsAboutProps {
@@ -20,7 +20,6 @@ export function PropertyDetailsAbout({
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
-    Object.assign(propertyDatabase[property.id], formData);
     onUpdate?.(formData);
     setIsSaving(false);
     setIsEditing(false);
@@ -37,17 +36,17 @@ export function PropertyDetailsAbout({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+        className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-vista-primary text-xl font-bold">About</h2>
         </div>
         <div className="mb-6">
-          <label className="block text-vista-text/70 text-sm font-medium mb-2">
+          <label className="text-vista-text/70 mb-2 block text-sm font-medium">
             Description
           </label>
           <textarea
-            value={formData.description}
+            value={formData.description ?? ""}
             onChange={(e) =>
               setFormData((prev) => ({
                 ...prev,
@@ -55,13 +54,13 @@ export function PropertyDetailsAbout({
               }))
             }
             rows={4}
-            className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors resize-none"
+            className="border-vista-surface/30 focus:border-vista-accent w-full resize-none rounded-lg border px-4 py-2 transition-colors focus:outline-none"
           />
         </div>
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 transition-colors font-medium"
+            className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -69,7 +68,7 @@ export function PropertyDetailsAbout({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vista-primary hover:bg-vista-primary/90 text-white font-medium transition-colors disabled:opacity-50"
+            className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
@@ -84,19 +83,21 @@ export function PropertyDetailsAbout({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+      className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
     >
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="text-vista-primary text-xl font-bold">About</h2>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-2 text-vista-accent hover:bg-vista-accent/10 rounded-lg transition-colors"
+          className="text-vista-accent hover:bg-vista-accent/10 rounded-lg p-2 transition-colors"
           title="Edit this section"
         >
           <Edit2 className="h-5 w-5" />
         </button>
       </div>
-      <p className="text-vista-text/80 leading-relaxed">{property.description}</p>
+      <p className="text-vista-text/80 leading-relaxed">
+        {property.description}
+      </p>
     </motion.div>
   );
 }

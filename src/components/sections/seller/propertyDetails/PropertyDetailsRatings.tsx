@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Star } from "lucide-react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 
 interface PropertyDetailsRatingsProps {
   property: Property;
@@ -24,19 +24,21 @@ export function PropertyDetailsRatings({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.7 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+      className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
     >
-      <h2 className="text-vista-primary text-xl font-bold mb-6">Property Ratings</h2>
+      <h2 className="text-vista-primary mb-6 text-xl font-bold">
+        Property Ratings
+      </h2>
 
       {/* Overall Rating */}
-      <div className="mb-8 pb-8 border-b border-vista-surface">
+      <div className="border-vista-surface mb-8 border-b pb-8">
         <div className="flex items-start gap-4">
           <div className="flex items-center gap-3">
             <div className="text-center">
               <p className="text-vista-primary text-4xl font-bold">
                 {ratings.overallRating}
               </p>
-              <div className="flex items-center gap-1 mt-1">
+              <div className="mt-1 flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
@@ -52,12 +54,12 @@ export function PropertyDetailsRatings({
           </div>
           <div>
             <p className="text-vista-text/70 text-sm">
-              <span className="font-semibold text-vista-primary">
+              <span className="text-vista-primary font-semibold">
                 {ratings.totalReviews}
               </span>{" "}
               buyer reviews and valuations
             </p>
-            <p className="text-vista-text/60 text-xs mt-1">
+            <p className="text-vista-text/60 mt-1 text-xs">
               Based on market analysis and buyer satisfaction
             </p>
           </div>
@@ -68,15 +70,15 @@ export function PropertyDetailsRatings({
       <div className="space-y-4">
         {ratingCategories.map((category, idx) => (
           <div key={idx}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <span className="text-vista-text/70 text-sm">
                 {category.label}
               </span>
-              <span className="text-vista-primary font-semibold text-sm">
+              <span className="text-vista-primary text-sm font-semibold">
                 {category.value}
               </span>
             </div>
-            <div className="w-full bg-vista-surface/30 rounded-full h-2">
+            <div className="bg-vista-surface/30 h-2 w-full rounded-full">
               <div
                 className="bg-vista-accent h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(category.value / 5) * 100}%` }}
@@ -87,17 +89,19 @@ export function PropertyDetailsRatings({
       </div>
 
       {/* Star Distribution */}
-      <div className="mt-8 pt-8 border-t border-vista-surface">
-        <p className="text-vista-primary font-semibold mb-3">Valuation Distribution</p>
+      <div className="border-vista-surface mt-8 border-t pt-8">
+        <p className="text-vista-primary mb-3 font-semibold">
+          Valuation Distribution
+        </p>
         <div className="space-y-2">
           {[5, 4, 3, 2, 1].map((stars) => (
             <div key={stars} className="flex items-center gap-2">
-              <span className="text-vista-text/60 text-xs w-12">
+              <span className="text-vista-text/60 w-12 text-xs">
                 {stars} star
               </span>
-              <div className="flex-1 bg-vista-surface/30 rounded-full h-2">
+              <div className="bg-vista-surface/30 h-2 flex-1 rounded-full">
                 <div
-                  className="bg-yellow-400 h-2 rounded-full"
+                  className="h-2 rounded-full bg-yellow-400"
                   style={{
                     width: `${
                       stars === 5

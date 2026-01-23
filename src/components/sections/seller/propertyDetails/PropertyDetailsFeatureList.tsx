@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, Edit2, Check, X, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsFeatureListProps {
@@ -20,7 +20,6 @@ export function PropertyDetailsFeatureList({
   const handleSave = async () => {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
-    Object.assign(propertyDatabase[property.id], formData);
     onUpdate?.(formData);
     setIsSaving(false);
     setIsEditing(false);
@@ -37,17 +36,19 @@ export function PropertyDetailsFeatureList({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.35 }}
-        className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+        className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-vista-primary text-xl font-bold">
             Features & Amenities
           </h2>
         </div>
-        <div className="space-y-6 mb-6">
+        <div className="mb-6 space-y-6">
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-vista-primary font-semibold">Interior Features</h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-vista-primary font-semibold">
+                Interior Features
+              </h3>
               <button
                 onClick={() =>
                   setFormData((prev) => ({
@@ -55,47 +56,49 @@ export function PropertyDetailsFeatureList({
                     interiorFeatures: [...(prev.interiorFeatures || []), ""],
                   }))
                 }
-                className="p-1 text-vista-accent hover:bg-vista-accent/10 rounded transition-colors"
+                className="text-vista-accent hover:bg-vista-accent/10 rounded p-1 transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
             <div className="space-y-2">
-              {formData.interiorFeatures?.map((feature: string, idx: number) => (
-                <div key={idx} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={feature}
-                    onChange={(e) =>
-                      setFormData((prev) => {
-                        const updated = [...(prev.interiorFeatures || [])];
-                        updated[idx] = e.target.value;
-                        return { ...prev, interiorFeatures: updated };
-                      })
-                    }
-                    className="flex-1 px-3 py-2 rounded border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors text-sm"
-                    placeholder="Feature name"
-                  />
-                  <button
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        interiorFeatures: prev.interiorFeatures?.filter(
-                          (_, i) => i !== idx
-                        ),
-                      }))
-                    }
-                    className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+              {formData.interiorFeatures?.map(
+                (feature: string, idx: number) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={feature}
+                      onChange={(e) =>
+                        setFormData((prev) => {
+                          const updated = [...(prev.interiorFeatures || [])];
+                          updated[idx] = e.target.value;
+                          return { ...prev, interiorFeatures: updated };
+                        })
+                      }
+                      className="border-vista-surface/30 focus:border-vista-accent flex-1 rounded border px-3 py-2 text-sm transition-colors focus:outline-none"
+                      placeholder="Feature name"
+                    />
+                    <button
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          interiorFeatures: prev.interiorFeatures?.filter(
+                            (_, i) => i !== idx
+                          ),
+                        }))
+                      }
+                      className="rounded p-2 text-red-500 transition-colors hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <h3 className="text-vista-primary font-semibold">
                 Building / Community Amenities
               </h3>
@@ -106,47 +109,49 @@ export function PropertyDetailsFeatureList({
                     buildingAmenities: [...(prev.buildingAmenities || []), ""],
                   }))
                 }
-                className="p-1 text-vista-accent hover:bg-vista-accent/10 rounded transition-colors"
+                className="text-vista-accent hover:bg-vista-accent/10 rounded p-1 transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </button>
             </div>
             <div className="space-y-2">
-              {formData.buildingAmenities?.map((amenity: string, idx: number) => (
-                <div key={idx} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={amenity}
-                    onChange={(e) =>
-                      setFormData((prev) => {
-                        const updated = [...(prev.buildingAmenities || [])];
-                        updated[idx] = e.target.value;
-                        return { ...prev, buildingAmenities: updated };
-                      })
-                    }
-                    className="flex-1 px-3 py-2 rounded border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors text-sm"
-                    placeholder="Amenity name"
-                  />
-                  <button
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        buildingAmenities: prev.buildingAmenities?.filter(
-                          (_, i) => i !== idx
-                        ),
-                      }))
-                    }
-                    className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+              {formData.buildingAmenities?.map(
+                (amenity: string, idx: number) => (
+                  <div key={idx} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={amenity}
+                      onChange={(e) =>
+                        setFormData((prev) => {
+                          const updated = [...(prev.buildingAmenities || [])];
+                          updated[idx] = e.target.value;
+                          return { ...prev, buildingAmenities: updated };
+                        })
+                      }
+                      className="border-vista-surface/30 focus:border-vista-accent flex-1 rounded border px-3 py-2 text-sm transition-colors focus:outline-none"
+                      placeholder="Amenity name"
+                    />
+                    <button
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          buildingAmenities: prev.buildingAmenities?.filter(
+                            (_, i) => i !== idx
+                          ),
+                        }))
+                      }
+                      className="rounded p-2 text-red-500 transition-colors hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <h3 className="text-vista-primary font-semibold">Utilities</h3>
               <button
                 onClick={() =>
@@ -155,7 +160,7 @@ export function PropertyDetailsFeatureList({
                     utilities: [...(prev.utilities || []), ""],
                   }))
                 }
-                className="p-1 text-vista-accent hover:bg-vista-accent/10 rounded transition-colors"
+                className="text-vista-accent hover:bg-vista-accent/10 rounded p-1 transition-colors"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -173,7 +178,7 @@ export function PropertyDetailsFeatureList({
                         return { ...prev, utilities: updated };
                       })
                     }
-                    className="flex-1 px-3 py-2 rounded border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors text-sm"
+                    className="border-vista-surface/30 focus:border-vista-accent flex-1 rounded border px-3 py-2 text-sm transition-colors focus:outline-none"
                     placeholder="Utility name"
                   />
                   <button
@@ -183,7 +188,7 @@ export function PropertyDetailsFeatureList({
                         utilities: prev.utilities?.filter((_, i) => i !== idx),
                       }))
                     }
-                    className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                    className="rounded p-2 text-red-500 transition-colors hover:bg-red-50"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -193,10 +198,10 @@ export function PropertyDetailsFeatureList({
           </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 transition-colors font-medium"
+            className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -204,7 +209,7 @@ export function PropertyDetailsFeatureList({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vista-primary hover:bg-vista-primary/90 text-white font-medium transition-colors disabled:opacity-50"
+            className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
@@ -219,15 +224,15 @@ export function PropertyDetailsFeatureList({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.35 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+      className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-vista-primary text-xl font-bold">
           Features & Amenities
         </h2>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-2 text-vista-accent hover:bg-vista-accent/10 rounded-lg transition-colors"
+          className="text-vista-accent hover:bg-vista-accent/10 rounded-lg p-2 transition-colors"
           title="Edit this section"
         >
           <Edit2 className="h-5 w-5" />
@@ -236,7 +241,7 @@ export function PropertyDetailsFeatureList({
       <div className="space-y-6">
         {property.interiorFeatures && property.interiorFeatures.length > 0 && (
           <div>
-            <h3 className="text-vista-primary font-semibold mb-3">
+            <h3 className="text-vista-primary mb-3 font-semibold">
               Interior Features
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -250,31 +255,30 @@ export function PropertyDetailsFeatureList({
           </div>
         )}
 
-        {property.buildingAmenities && property.buildingAmenities.length > 0 && (
-          <div>
-            <h3 className="text-vista-primary font-semibold mb-3">
-              Building / Community Amenities
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {property.buildingAmenities.map(
-                (amenity: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <CheckCircle2 className="text-vista-accent h-4 w-4 shrink-0" />
-                    <span className="text-vista-text/80 text-sm">
-                      {amenity}
-                    </span>
-                  </div>
-                )
-              )}
+        {property.buildingAmenities &&
+          property.buildingAmenities.length > 0 && (
+            <div>
+              <h3 className="text-vista-primary mb-3 font-semibold">
+                Building / Community Amenities
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {property.buildingAmenities.map(
+                  (amenity: string, idx: number) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <CheckCircle2 className="text-vista-accent h-4 w-4 shrink-0" />
+                      <span className="text-vista-text/80 text-sm">
+                        {amenity}
+                      </span>
+                    </div>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {property.utilities && property.utilities.length > 0 && (
           <div>
-            <h3 className="text-vista-primary font-semibold mb-3">
-              Utilities
-            </h3>
+            <h3 className="text-vista-primary mb-3 font-semibold">Utilities</h3>
             <div className="grid grid-cols-2 gap-3">
               {property.utilities.map((utility: string, idx: number) => (
                 <div key={idx} className="flex items-center gap-2">

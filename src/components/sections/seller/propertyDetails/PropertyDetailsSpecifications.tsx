@@ -1,7 +1,15 @@
 import { motion } from "framer-motion";
-import { MapPin, ParkingCircle, Home, Layers, Edit2, Check, X } from "lucide-react";
+import {
+  MapPin,
+  ParkingCircle,
+  Home,
+  Layers,
+  Edit2,
+  Check,
+  X,
+} from "lucide-react";
 import { useState } from "react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsSpecificationsProps {
@@ -37,32 +45,32 @@ export function PropertyDetailsSpecifications({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+        className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-vista-primary text-xl font-bold">
             Property Specifications
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Floor Area
             </label>
             <input
-              type="text"
-              value={formData.floorArea}
+              type="number"
+              value={formData.floorArea ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  floorArea: e.target.value,
+                  floorArea: parseFloat(e.target.value) || null,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Lot Area
             </label>
             <input
@@ -71,14 +79,14 @@ export function PropertyDetailsSpecifications({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  lotArea: e.target.value || undefined,
+                  lotArea: parseFloat(e.target.value) || null,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Floor Level
             </label>
             <input
@@ -90,11 +98,11 @@ export function PropertyDetailsSpecifications({
                   floorLevel: e.target.value || undefined,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Parking Slots
             </label>
             <input
@@ -103,35 +111,41 @@ export function PropertyDetailsSpecifications({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  parking: { ...prev.parking, slots: parseInt(e.target.value) || 0 },
+                  parking: {
+                    ...prev.parking,
+                    slots: parseInt(e.target.value) || 0,
+                  },
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Parking Available
             </label>
             <select
-              value={formData.parking.available ? "yes" : "no"}
+              value={formData.parkingAvailable ? "yes" : "no"}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  parking: { ...prev.parking, available: e.target.value === "yes" },
+                  parking: {
+                    ...prev,
+                    available: e.target.value === "yes",
+                  },
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             >
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
           </div>
         </div>
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 transition-colors font-medium"
+            className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -139,7 +153,7 @@ export function PropertyDetailsSpecifications({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vista-primary hover:bg-vista-primary/90 text-white font-medium transition-colors disabled:opacity-50"
+            className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
@@ -154,36 +168,36 @@ export function PropertyDetailsSpecifications({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+      className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-vista-primary text-xl font-bold">
           Property Specifications
         </h2>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-2 text-vista-accent hover:bg-vista-accent/10 rounded-lg transition-colors"
+          className="text-vista-accent hover:bg-vista-accent/10 rounded-lg p-2 transition-colors"
           title="Edit this section"
         >
           <Edit2 className="h-5 w-5" />
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="flex items-start gap-3">
-          <Layers className="text-vista-accent h-5 w-5 mt-1 shrink-0" />
+          <Layers className="text-vista-accent mt-1 h-5 w-5 shrink-0" />
           <div>
             <p className="text-vista-text/60 text-sm">Floor Area</p>
-            <p className="text-vista-primary font-semibold text-lg">
+            <p className="text-vista-primary text-lg font-semibold">
               {property.floorArea}
             </p>
           </div>
         </div>
         {property.lotArea && (
           <div className="flex items-start gap-3">
-            <MapPin className="text-vista-accent h-5 w-5 mt-1 shrink-0" />
+            <MapPin className="text-vista-accent mt-1 h-5 w-5 shrink-0" />
             <div>
               <p className="text-vista-text/60 text-sm">Lot Area</p>
-              <p className="text-vista-primary font-semibold text-lg">
+              <p className="text-vista-primary text-lg font-semibold">
                 {property.lotArea}
               </p>
             </div>
@@ -191,22 +205,22 @@ export function PropertyDetailsSpecifications({
         )}
         {property.floorLevel && (
           <div className="flex items-start gap-3">
-            <Home className="text-vista-accent h-5 w-5 mt-1 shrink-0" />
+            <Home className="text-vista-accent mt-1 h-5 w-5 shrink-0" />
             <div>
               <p className="text-vista-text/60 text-sm">Floor Level</p>
-              <p className="text-vista-primary font-semibold text-lg">
+              <p className="text-vista-primary text-lg font-semibold">
                 {property.floorLevel}
               </p>
             </div>
           </div>
         )}
         <div className="flex items-start gap-3">
-          <ParkingCircle className="text-vista-accent h-5 w-5 mt-1 shrink-0" />
+          <ParkingCircle className="text-vista-accent mt-1 h-5 w-5 shrink-0" />
           <div>
             <p className="text-vista-text/60 text-sm">Parking</p>
-            <p className="text-vista-primary font-semibold text-lg">
-              {property.parking.available
-                ? `${property.parking.slots} slot(s)`
+            <p className="text-vista-primary text-lg font-semibold">
+              {property.parkingAvailable
+                ? `${property.parkingSlots} slot(s)`
                 : "Not available"}
             </p>
           </div>

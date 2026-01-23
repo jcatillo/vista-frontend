@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Calendar, PawPrint, Cigarette, Edit2, Check, X } from "lucide-react";
 import { useState } from "react";
-import type { Property } from "../../../../data/properties";
+import type { Property } from "../../../../types/property";
 import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsAvailabilityProps {
@@ -37,33 +37,35 @@ export function PropertyDetailsAvailability({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+        className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-vista-primary text-xl font-bold">
             Availability & Restrictions
           </h2>
         </div>
-        <div className="space-y-6 mb-6">
+        <div className="mb-6 space-y-6">
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Available From
             </label>
             <input
               type="date"
-              value={new Date(formData.availabilityDate).toISOString().split('T')[0]}
+              value={
+                new Date(formData.availabilityDate).toISOString().split("T")[0]
+              }
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
                   availabilityDate: new Date(e.target.value).toISOString(),
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Minimum Lease Period
             </label>
             <input
@@ -75,12 +77,12 @@ export function PropertyDetailsAvailability({
                   minimumLeasePeriod: e.target.value || undefined,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Pet Policy
             </label>
             <select
@@ -91,7 +93,7 @@ export function PropertyDetailsAvailability({
                   petPolicy: e.target.value,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             >
               <option>Not allowed</option>
               <option>Small pets allowed</option>
@@ -100,7 +102,7 @@ export function PropertyDetailsAvailability({
           </div>
 
           <div>
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Smoking Policy
             </label>
             <select
@@ -111,7 +113,7 @@ export function PropertyDetailsAvailability({
                   smokingPolicy: e.target.value,
                 }))
               }
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors"
+              className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
             >
               <option>Not allowed</option>
               <option>Allowed</option>
@@ -119,10 +121,10 @@ export function PropertyDetailsAvailability({
             </select>
           </div>
         </div>
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 transition-colors font-medium"
+            className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -130,7 +132,7 @@ export function PropertyDetailsAvailability({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vista-primary hover:bg-vista-primary/90 text-white font-medium transition-colors disabled:opacity-50"
+            className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
@@ -145,15 +147,15 @@ export function PropertyDetailsAvailability({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8"
+      className="shadow-soft rounded-2xl border border-white/50 bg-white p-6 md:p-8"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-vista-primary text-xl font-bold">
           Availability & Restrictions
         </h2>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-2 text-vista-accent hover:bg-vista-accent/10 rounded-lg transition-colors"
+          className="text-vista-accent hover:bg-vista-accent/10 rounded-lg p-2 transition-colors"
           title="Edit this section"
         >
           <Edit2 className="h-5 w-5" />
@@ -161,7 +163,7 @@ export function PropertyDetailsAvailability({
       </div>
       <div className="space-y-4">
         <div className="flex items-start gap-3">
-          <Calendar className="text-vista-accent h-5 w-5 mt-0.5 shrink-0" />
+          <Calendar className="text-vista-accent mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <p className="text-vista-text/60 text-sm">Available From</p>
             <p className="text-vista-primary font-semibold">
@@ -171,7 +173,7 @@ export function PropertyDetailsAvailability({
         </div>
         {property.minimumLeasePeriod && (
           <div className="flex items-start gap-3">
-            <Calendar className="text-vista-accent h-5 w-5 mt-0.5 shrink-0" />
+            <Calendar className="text-vista-accent mt-0.5 h-5 w-5 shrink-0" />
             <div>
               <p className="text-vista-text/60 text-sm">Minimum Lease Period</p>
               <p className="text-vista-primary font-semibold">
@@ -181,7 +183,7 @@ export function PropertyDetailsAvailability({
           </div>
         )}
         <div className="flex items-start gap-3">
-          <PawPrint className="text-vista-accent h-5 w-5 mt-0.5 shrink-0" />
+          <PawPrint className="text-vista-accent mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <p className="text-vista-text/60 text-sm">Pet Policy</p>
             <p className="text-vista-primary font-semibold">
@@ -190,7 +192,7 @@ export function PropertyDetailsAvailability({
           </div>
         </div>
         <div className="flex items-start gap-3">
-          <Cigarette className="text-vista-accent h-5 w-5 mt-0.5 shrink-0" />
+          <Cigarette className="text-vista-accent mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <p className="text-vista-text/60 text-sm">Smoking Policy</p>
             <p className="text-vista-primary font-semibold">
