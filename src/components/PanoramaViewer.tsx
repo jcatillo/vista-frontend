@@ -8,6 +8,7 @@ interface PanoramaViewerProps {
   width?: string | number;
   height?: string | number;
   onReady?: () => void;
+  useDeviceOrientation?: boolean;
 }
 
 function PanoramaScene({ imageUrl, onTextureLoaded }: { imageUrl: string; onTextureLoaded?: () => void }) {
@@ -73,47 +74,82 @@ function PanoramaScene({ imageUrl, onTextureLoaded }: { imageUrl: string; onText
 
 function DeviceOrientationController() {
   const { camera } = useThree();
-  const euler = useRef(new THREE.Euler(0, 0, 0, "YXZ"));
-  const alpha = useRef(0);
-  const beta = useRef(0);
-  const gamma = useRef(0);
-  const isMobile = useRef(false);
+  const orientationData = useRef({ alpha: 0, beta: 0, gamma: 0 });
+  const initialAlpha = useRef<number | null>(null);
+  const hasReceivedEvent = useRef(false);
 
   useEffect(() => {
-    // Check if device supports orientation
     const handleDeviceOrientation = (event: DeviceOrientationEvent) => {
-      isMobile.current = true;
-      alpha.current = THREE.MathUtils.degToRad(event.alpha || 0); // Z axis rotation
-      beta.current = THREE.MathUtils.degToRad(event.beta || 0);   // X axis rotation
-      gamma.current = THREE.MathUtils.degToRad(event.gamma || 0); // Y axis rotation
+      if (event.alpha === null || event.beta === null || event.gamma === null) {
+        console.log("Device orientation event received but values are null");
+        return;
+      }
+      
+      if (!hasReceivedEvent.current) {
+        console.log("✅ Device orientation working! First event received:", {
+          alpha: event.alpha,
+          beta: event.beta,
+          gamma: event.gamma
+        });
+        hasReceivedEvent.current = true;
+      }
+      
+      // Store initial alpha as reference
+      if (initialAlpha.current === null) {
+        initialAlpha.current = event.alpha;
+      }
+      
+      orientationData.current = {
+        alpha: event.alpha - (initialAlpha.current || 0),
+        beta: event.beta,
+        gamma: event.gamma
+      };
     };
 
-    window.addEventListener("deviceorientation", handleDeviceOrientation);
-
-    // Request permission for iOS 13+
-    if (typeof DeviceOrientationEvent !== "undefined" && (DeviceOrientationEvent as any).requestPermission) {
-      (DeviceOrientationEvent as any).requestPermission()
-        .then((permission: string) => {
-          if (permission === "granted") {
-            window.addEventListener("deviceorientation", handleDeviceOrientation);
+    const setupOrientationListener = async () => {
+      console.log("Setting up device orientation...");
+      
+      // iOS 13+ requires permission request
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        try {
+          console.log("Requesting iOS permission...");
+          const permission = await (DeviceOrientationEvent as any).requestPermission();
+          console.log("iOS permission result:", permission);
+          if (permission === 'granted') {
+            window.addEventListener("deviceorientation", handleDeviceOrientation, true);
           }
-        })
-        .catch(() => {
-          console.log("Device orientation permission denied");
-        });
-    }
+        } catch (err) {
+          console.error("iOS permission error:", err);
+        }
+      } else {
+        // Non-iOS - just add listener directly
+        console.log("Non-iOS device, adding listener directly");
+        window.addEventListener("deviceorientation", handleDeviceOrientation, true);
+        window.addEventListener("deviceorientationabsolute", handleDeviceOrientation as any, true);
+      }
+    };
 
+    setupOrientationListener();
+    
     return () => {
-      window.removeEventListener("deviceorientation", handleDeviceOrientation);
+      window.removeEventListener("deviceorientation", handleDeviceOrientation, true);
+      window.removeEventListener("deviceorientationabsolute", handleDeviceOrientation as any, true);
     };
   }, []);
 
   useFrame(() => {
-    if (isMobile.current) {
-      // Set euler angles and convert to quaternion
-      euler.current.set(beta.current, alpha.current, -gamma.current, "YXZ");
-      camera.quaternion.setFromEuler(euler.current);
-    }
+    const { alpha, beta, gamma } = orientationData.current;
+    
+    // Convert to radians
+    const alphaRad = THREE.MathUtils.degToRad(alpha);
+    const betaRad = THREE.MathUtils.degToRad(beta);
+    const gammaRad = THREE.MathUtils.degToRad(gamma);
+    
+    // For landscape orientation (phone held horizontally)
+    const euler = new THREE.Euler();
+    euler.set(betaRad - Math.PI / 2, alphaRad, -gammaRad, 'YXZ');
+    camera.quaternion.setFromEuler(euler);
   });
 
   return null;
@@ -124,9 +160,8 @@ export function PanoramaViewer({
   width = "100%",
   height = "100%",
   onReady,
+  useDeviceOrientation = false,
 }: PanoramaViewerProps) {
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
   return (
     <div style={{ width, height, touchAction: "none", position: "relative" }}>
       <Canvas
@@ -135,16 +170,19 @@ export function PanoramaViewer({
         gl={{ antialias: true }}
       >
         <PanoramaScene imageUrl={imageUrl} onTextureLoaded={onReady} />
-        {isMobile && <DeviceOrientationController />}
-        <OrbitControls
-          enableZoom={true}
-          enablePan={false}
-          enableDamping={true}
-          dampingFactor={0.05}
-          autoRotate={false}
-          rotateSpeed={0.4}
-          zoomSpeed={1}
-        />
+        {useDeviceOrientation ? (
+          <DeviceOrientationController />
+        ) : (
+          <OrbitControls
+            enableZoom={true}
+            enablePan={false}
+            enableDamping={true}
+            dampingFactor={0.05}
+            autoRotate={false}
+            rotateSpeed={0.4}
+            zoomSpeed={1}
+          />
+        )}
         <Preload all />
       </Canvas>
     </div>
