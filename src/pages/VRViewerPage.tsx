@@ -1,18 +1,20 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { type Property } from "../types/property";
-import { useState, useEffect } from "react";
-import { PanoramaViewer } from "../components/PanoramaViewer";
+import { propertyDatabase, type Property } from "../data/properties";
+import { useState, useEffect, useRef } from "react";
+import * as Pannellum from "pannellum";
 
 export default function VRViewerPage() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [property] = useState<Property | null>(
-    location.state?.property || null
+  const [property, setProperty] = useState<Property | null>(
+    propertyDatabase[id || "1"]
   );
   const [showUI, setShowUI] = useState(true);
   const [uiTimeout, setUiTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<any>(null);
 
   useEffect(() => {
     const handleMouseMove = () => {
@@ -57,43 +59,37 @@ export default function VRViewerPage() {
     );
   }
 
-  // Extract panoramic images from the images array (API)
-  const extractedPanoramicImages = (property.images || [])
-    .filter((img: any) => img.imageType === "panoramic")
-    .map((img: any) => ({
-      url: img.url,
-      title: img.filename || "Panoramic View",
-      description: ""
-    }));
+  const panoramicImages = property.panoramicImages || [];
 
-  // Use extracted panoramic images if available, otherwise use the panoramicImages array (backward compatibility)
-  const panoramicImages = extractedPanoramicImages.length > 0 ? extractedPanoramicImages : (property.panoramicImages || []);
+  // Initialize Pannellum viewer
+  useEffect(() => {
+    if (!containerRef.current || panoramicImages.length === 0) return;
 
-  // Debug: Log the panoramic images
-  console.log("Panoramic images:", panoramicImages);
-  if (panoramicImages.length > 0) {
-    console.log("Current image URL:", panoramicImages[currentImageIndex].url);
-  }
+    viewerRef.current = (Pannellum as any).viewer(containerRef.current, {
+      type: "equirectangular",
+      panorama: panoramicImages[currentImageIndex].url,
+      autoLoad: true,
+      showControls: false,
+      yaw: 0,
+      pitch: 0,
+      hfov: 110,
+    });
+
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+      }
+    };
+  }, [currentImageIndex, panoramicImages]);
 
   return (
     <div className="bg-black w-screen h-screen overflow-hidden fixed top-0 left-0">
-      {/* Three.js 360 Panorama Viewer - Fullscreen */}
-      {panoramicImages.length > 0 && (
-        <PanoramaViewer 
-          imageUrl={panoramicImages[currentImageIndex].url}
-          width="100%"
-          height="100%"
-        />
-      )}
-      {panoramicImages.length === 0 && (
-        <div className="flex items-center justify-center w-full h-full text-white">
-          <p>No panoramic images available</p>
-        </div>
-      )}
+      {/* Pannellum 360 Panorama Viewer - Fullscreen */}
+      <div ref={containerRef} className="w-full h-full" />
 
       {/* Header Overlay - Auto-hide */}
       <div
-        className={`absolute top-0 left-0 right-0 z-20 bg-linear-to-b from-black/80 to-transparent transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${
           showUI ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -121,7 +117,7 @@ export default function VRViewerPage() {
       {/* Panoramic Views List - Bottom Overlay - Auto-hide */}
       {panoramicImages.length > 1 && (
         <div
-          className={`absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/90 to-transparent p-6 transition-opacity duration-300 ${
+          className={`absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 to-transparent p-6 transition-opacity duration-300 ${
             showUI ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
@@ -136,7 +132,7 @@ export default function VRViewerPage() {
                   onClick={() => {
                     setCurrentImageIndex(index);
                   }}
-                  className="group relative rounded-lg overflow-hidden border-2 border-white/20 hover:border-vista-accent transition-all shrink-0"
+                  className="group relative rounded-lg overflow-hidden border-2 border-white/20 hover:border-vista-accent transition-all flex-shrink-0"
                 >
                   <div className="w-24 h-24 overflow-hidden">
                     <img
