@@ -85,3 +85,137 @@ export interface Property {
   updatedAt?: string;
   createdBy?: string;
 }
+
+// Lightweight payload interfaces for buyer side optimization
+
+export interface PropertyCardPayload {
+  propertyId: string;
+  name: string;
+  address: string;
+  price: number;
+  priceNegotiable?: boolean;
+  listingType: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  floorArea?: number;
+  propertyType: string;
+  furnishing?: string;
+  imageUrl: string;
+}
+
+export interface PropertyDetailsPayload {
+  propertyId: string;
+  name: string;
+  listingType: string;
+  propertyType: string;
+  status?: string;
+  address: string;
+  price: number;
+  priceNegotiable?: boolean;
+  associationDues?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  floorArea?: number;
+  parkingSlots?: number;
+  description?: string;
+  furnishing?: string;
+  condition?: string;
+  lotArea?: number;
+  yearBuilt?: number;
+  storeys?: number;
+  interiorFeatures: string[];
+  amenities: string[];
+  buildingAmenities: string[];
+  images: PropertyImagePayload[];
+  agentName?: string;
+  agentPhone?: string;
+  agentEmail?: string;
+  agentExperience?: number;
+  nearbySchools?: NearbyPlace[];
+  nearbyMalls?: NearbyPlace[];
+  nearbyHospitals?: NearbyPlace[];
+  nearbyOffices?: NearbyPlace[];
+  nearbyTransport?: NearbyPlace[];
+}
+
+export interface PropertyImagePayload {
+  id: string;
+  url: string;
+  imageType: string;
+}
+
+// API Query and Response interfaces
+
+export interface PropertyCardsQuery {
+  location?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface PropertyCardsResponse {
+  success: boolean;
+  properties: PropertyCardPayload[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  error?: {
+    message: string;
+  };
+}
+
+export interface PropertyDetailsResponse {
+  success: boolean;
+  property: PropertyDetailsPayload;
+  error?: {
+    message: string;
+  };
+}
+
+export interface PropertySearchRequest {
+  location?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+}
+
+export interface PropertySearchResponse {
+  success: boolean;
+  properties: PropertyCardPayload[];
+  total: number;
+  error?: {
+    message: string;
+  };
+}
+
+export interface BuyerPropertiesViewQuery {
+  user_id?: string;
+  location?: string;
+  propertyType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  bedrooms?: number;
+}
+
+export interface BuyerPropertiesViewResponse {
+  success: boolean;
+  properties: PropertyCardPayload[];
+  total: number;
+  filters: {
+    location?: string;
+    propertyType?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    bedrooms?: string;
+  };
+  error?: {
+    message: string;
+  };
+}
