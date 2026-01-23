@@ -108,6 +108,13 @@ export interface Property {
   nearbyMalls: NearbyEstablishment[];
   nearbyTransport: NearbyEstablishment[];
   nearbyOffices: NearbyEstablishment[];
+  nearbyEstablishments?: {
+    schools: Array<{ distance: string; name: string }>;
+    hospitals: Array<{ distance: string; name: string }>;
+    malls: Array<{ distance: string; name: string }>;
+    publicTransport: Array<{ distance: string; name: string }>;
+    offices: Array<{ distance: string; name: string }>;
+  };
 
   // Legal & Financial
   ownershipStatus?: string | null;
@@ -131,6 +138,18 @@ export interface Property {
     agentName: string;
     phone: string;
     email: string;
+  };
+  agent?: {
+    id: string;
+    name: string;
+    title: string;
+    image: string;
+    phone: string;
+    email: string;
+    experience: string;
+    rating: number;
+    reviews: number;
+    bio: string;
   };
 
   // Developer Information
@@ -171,6 +190,11 @@ export interface Property {
   images: PropertyImage[];
   regularImageCount: number;
   panoramicImageCount: number;
+  panoramicImages?: Array<{
+    url: string;
+    title?: string;
+    description?: string;
+  }>;
   image?: PropertyImage | null; // Main thumbnail
 }
 
@@ -187,6 +211,7 @@ export interface PropertyFormInput extends Omit<
   | "image"
   | "regularImageCount"
   | "panoramicImageCount"
+  | "panoramicImages"
   | "createdBy"
   | "status"
 > {
