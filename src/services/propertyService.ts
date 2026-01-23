@@ -31,19 +31,15 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
     // 1. Handle Files
     // We append multiple values to the same key 'regularImages' (without brackets)
     if (key === "regularImages" && Array.isArray(value)) {
-      value.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("regularImages", file);
-        }
-      });
+      (value as File[]).forEach((file) =>
+        formData.append("regularImages", file)
+      );
       return;
     }
     if (key === "panoramicImages" && Array.isArray(value)) {
-      value.forEach((file) => {
-        if (file instanceof File) {
-          formData.append("panoramicImages", file);
-        }
-      });
+      (value as File[]).forEach((file) =>
+        formData.append("panoramicImages", file)
+      );
       return;
     }
     // Python: `if 'image' in files:`

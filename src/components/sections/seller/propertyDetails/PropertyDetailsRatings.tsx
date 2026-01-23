@@ -12,9 +12,10 @@ export function PropertyDetailsRatings({
   const { ratings } = property;
 
   const ratingCategories = [
+    { label: "Overall Rating", value: ratings.overall },
     { label: "Cleanliness", value: ratings.cleanliness },
     { label: "Location", value: ratings.location },
-    { label: "Value", value: ratings.value },
+    { label: "Property Value", value: ratings.value },
   ];
 
   return (
@@ -34,7 +35,7 @@ export function PropertyDetailsRatings({
           <div className="flex items-center gap-3">
             <div className="text-center">
               <p className="text-vista-primary text-4xl font-bold">
-                {ratings.overall.toFixed(1)}
+                {ratings.overall}
               </p>
               <div className="mt-1 flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
@@ -52,7 +53,8 @@ export function PropertyDetailsRatings({
           </div>
           <div>
             <p className="text-vista-text/70 text-sm">
-              Overall property rating
+              <span className="text-vista-primary font-semibold">127</span>{" "}
+              buyer reviews and valuations
             </p>
             <p className="text-vista-text/60 mt-1 text-xs">
               Based on market analysis

@@ -143,7 +143,7 @@ export function PropertyDetailsStats({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  bedrooms: parseInt(e.target.value) || 0,
+                  bedrooms: e.target.value ? parseInt(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -159,7 +159,7 @@ export function PropertyDetailsStats({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  bathrooms: parseInt(e.target.value) || 0,
+                  bathrooms: e.target.value ? parseInt(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -193,7 +193,7 @@ export function PropertyDetailsStats({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  floorArea: parseFloat(e.target.value) || null,
+                  floorArea: e.target.value ? parseFloat(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"

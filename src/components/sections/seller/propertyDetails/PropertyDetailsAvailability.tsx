@@ -59,11 +59,19 @@ export function PropertyDetailsAvailability({
             </label>
             <input
               type="date"
-              value={formattedDate}
+              value={
+                formData.availabilityDate
+                  ? new Date(formData.availabilityDate)
+                      .toISOString()
+                      .split("T")[0]
+                  : ""
+              }
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  availabilityDate: new Date(e.target.value).toISOString(),
+                  availabilityDate: e.target.value
+                    ? new Date(e.target.value).toISOString()
+                    : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -96,7 +104,7 @@ export function PropertyDetailsAvailability({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  petPolicy: e.target.value,
+                  petPolicy: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -116,7 +124,7 @@ export function PropertyDetailsAvailability({
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  smokingPolicy: e.target.value,
+                  smokingPolicy: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -175,7 +183,7 @@ export function PropertyDetailsAvailability({
             <p className="text-vista-primary font-semibold">
               {property.availabilityDate
                 ? new Date(property.availabilityDate).toLocaleDateString()
-                : "Not set"}
+                : "Not specified"}
             </p>
           </div>
         </div>
