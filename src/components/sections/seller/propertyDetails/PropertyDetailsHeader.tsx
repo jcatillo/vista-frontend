@@ -42,9 +42,6 @@ export function PropertyDetailsHeader({
               {property.price}
             </p>
           </div>
-          <div className="w-fit rounded-xl bg-green-600 px-4 py-2 text-white">
-            <span className="text-sm font-semibold">{property.status}</span>
-          </div>
         </div>
       </motion.div>
     </motion.div>

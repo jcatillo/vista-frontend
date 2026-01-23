@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function SellerLoginPage() {
+export default function BuyerLogin() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -17,9 +17,9 @@ export default function SellerLoginPage() {
     // Simulate login delay
     setTimeout(() => {
       setIsLoading(false);
-      // Navigate to seller dashboard
-      navigate("/seller/dashboard");
-    }, 1500);
+      // Navigate to buyer marketplace
+      navigate("/buyer/marketplace");
+    }, 500);
   };
 
   return (
@@ -49,7 +49,7 @@ export default function SellerLoginPage() {
         >
           <div className="mb-4 text-2xl font-bold">
             <span className="text-vista-primary">Vista</span>
-            <span className="text-vista-accent">.Seller</span>
+            <span className="text-vista-accent">.Buyer</span>
           </div>
           <h1 className="text-vista-primary mb-2 text-3xl font-bold md:text-4xl">
             Welcome Back
@@ -76,7 +76,7 @@ export default function SellerLoginPage() {
               <Mail className="text-vista-text/40 ml-3 h-4 w-4" />
               <input
                 type="email"
-                placeholder="seller@example.com"
+                placeholder="buyer@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-vista-bg/30 text-vista-primary placeholder-vista-text/40 w-full px-3 py-2.5 outline-none"

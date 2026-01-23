@@ -1,12 +1,29 @@
-export interface Property {
+export interface PropertyImage {
   id: string;
-  title: string;
-  location: string;
-  distance?: string;
-  availability?: string;
-  pricePerNight: number;
-  rating: number;
-  imageUrls: string[];
-  isGuestFavorite: boolean;
-  category: "Room" | "Condo" | "Entire Home";
+  filename: string;
+  url: string;
+  thumbnailUrl: string | null;
+  imageType: "regular" | "panoramic";
+}
+
+export interface Property {
+  propertyId: string;
+  name: string;
+  address: string;
+  price: number;
+  listingType: string;
+  propertyType: string;
+  bedrooms: number;
+  bathrooms: number;
+  floorArea: number;
+  lotArea: number;
+  description: string;
+  image: PropertyImage;
+  images: PropertyImage[];
+  status: string;
+  availabilityDate?: string;
+  furnishing?: string;
+  parkingSlots?: number;
+  yearBuilt?: number;
+  priceNegotiable?: boolean;
 }

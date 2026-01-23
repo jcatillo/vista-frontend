@@ -130,13 +130,6 @@ function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
           />
           <div className="from-vista-primary/60 absolute inset-0 bg-linear-to-t to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
-          {/* Status Badge */}
-          <div
-            className={`absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${status.color}`}
-          >
-            <StatusIcon className="h-3.5 w-3.5" />
-            {status.label}
-          </div>
 
           {/* Price Badge */}
           <div className="bg-vista-primary/90 absolute bottom-3 left-3 rounded-lg px-3 py-1.5 backdrop-blur-sm">

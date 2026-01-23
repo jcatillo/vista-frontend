@@ -7,6 +7,7 @@ import SellerPropertiesPage from "./pages/SellerPropertiesPage";
 import PropertyDetailsPage from "./pages/SellerPropertyDetailsPage";
 import VRViewerPage from "./pages/VRViewerPage";
 import Marketplace from "./pages/buyer/Marketplace";
+import BuyerLogin from "./pages/buyer/BuyerLogin";
 
 export default createBrowserRouter([
   {
@@ -38,4 +39,6 @@ export default createBrowserRouter([
     Component: VRViewerPage,
   },
   { path: "/buyer", Component: Marketplace },
+  { path: "/buyer", Component: BuyerLogin },
+  { path: "/buyer/marketplace", Component: Marketplace },
 ]);
