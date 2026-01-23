@@ -47,6 +47,10 @@ export function PropertyDetailsImageModal({
         ? [property.image]
         : []);
 
+  // Get current image to check its type
+  const currentImage = images[currentImageIndex];
+  const isPanoramic = currentImage?.imageType === "panoramic";
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -121,11 +125,18 @@ export function PropertyDetailsImageModal({
                 <X className="h-6 w-6" />
               </button>
 
+              {/* Image Type Indicator */}
+              {isPanoramic && (
+                <div className="absolute top-4 left-4 rounded-lg bg-vista-accent/90 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                  Panoramic View
+                </div>
+              )}
+
               {/* Main Image */}
               <img
                 src={images[currentImageIndex]?.url}
                 alt={`${property.name} - Image ${currentImageIndex + 1}`}
-                className="h-full w-full object-contain"
+                className={`h-full w-full ${isPanoramic ? 'object-cover' : 'object-contain'}`}
               />
 
               {/* Navigation Arrows */}

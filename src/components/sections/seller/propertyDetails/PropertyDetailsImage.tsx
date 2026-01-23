@@ -99,7 +99,9 @@ export function PropertyDetailsImage({
   const [newImageUrl, setNewImageUrl] = useState("");
 
   // Get display images (handle both single image and array formats)
-  const images = editImages;
+  const allImages = editImages;
+  // Filter to show only regular images in the main gallery
+  const images = allImages.filter(img => img.imageType === "regular");
 
   /**
    * Navigate to previous image in gallery (loops to end)
@@ -434,7 +436,7 @@ export function PropertyDetailsImage({
 
         {/* Expand Button */}
         <button
-          onClick={() => onImageExpanded(true, currentImageIndex, images)}
+          onClick={() => onImageExpanded(true, currentImageIndex, allImages)}
           className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-xl px-3 py-2 text-white transition-colors"
         >
           <Maximize2 className="h-4 w-4" />
