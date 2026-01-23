@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Property } from "../../../../data/properties";
+import type { Property, PropertyImage } from "../../../../types/property";
 
 const scrollbarStyles = `
   .image-modal-scrollbar::-webkit-scrollbar {
@@ -28,6 +28,7 @@ interface PropertyDetailsImageModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialImageIndex?: number;
+  images?: PropertyImage[];
 }
 
 export function PropertyDetailsImageModal({
@@ -35,15 +36,22 @@ export function PropertyDetailsImageModal({
   isOpen,
   onClose,
   initialImageIndex = 0,
+  images: propImages,
 }: PropertyDetailsImageModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(initialImageIndex);
-  const images = property.images && property.images.length > 0 ? property.images : [property.image];
+  const images =
+    propImages ||
+    (property.images && property.images.length > 0
+      ? property.images
+      : property.image
+        ? [property.image]
+        : []);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
       setCurrentImageIndex(initialImageIndex);
-      
+
       // Inject scrollbar styles
       const styleEl = document.createElement("style");
       styleEl.innerHTML = scrollbarStyles;
@@ -51,7 +59,7 @@ export function PropertyDetailsImageModal({
       document.head.appendChild(styleEl);
     } else {
       document.body.style.overflow = "unset";
-      
+
       // Remove scrollbar styles when modal closes
       const styleEl = document.getElementById("image-modal-scrollbar-styles");
       if (styleEl) {
@@ -94,7 +102,7 @@ export function PropertyDetailsImageModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/95 z-40"
+            className="fixed inset-0 z-40 bg-black/95"
           />
 
           {/* Modal Content */}
@@ -104,20 +112,20 @@ export function PropertyDetailsImageModal({
             exit={{ opacity: 0, scale: 0.9 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
-            <div className="relative w-full max-w-4xl max-h-[90vh] flex items-center justify-center">
+            <div className="relative flex max-h-[90vh] w-full max-w-4xl items-center justify-center">
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
+                className="absolute top-4 right-4 z-10 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
               >
                 <X className="h-6 w-6" />
               </button>
 
               {/* Main Image */}
               <img
-                src={images[currentImageIndex]}
+                src={images[currentImageIndex]?.url}
                 alt={`${property.name} - Image ${currentImageIndex + 1}`}
-                className="w-full h-full object-contain"
+                className="h-full w-full object-contain"
               />
 
               {/* Navigation Arrows */}
@@ -125,13 +133,13 @@ export function PropertyDetailsImageModal({
                 <>
                   <button
                     onClick={goToPrevious}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-colors"
+                    className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white transition-colors hover:bg-white/40"
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </button>
                   <button
                     onClick={goToNext}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-colors"
+                    className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white transition-colors hover:bg-white/40"
                   >
                     <ChevronRight className="h-6 w-6" />
                   </button>
@@ -140,25 +148,29 @@ export function PropertyDetailsImageModal({
 
               {/* Image Counter */}
               {images.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 rounded-lg px-4 py-2 text-white text-sm font-medium">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-black/50 px-4 py-2 text-sm font-medium text-white">
                   {currentImageIndex + 1} / {images.length}
                 </div>
               )}
 
               {/* Thumbnail Strip */}
               {images.length > 1 && (
-                <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto image-modal-scrollbar">
+                <div className="image-modal-scrollbar absolute -bottom-20 left-1/2 flex -translate-x-1/2 gap-2 overflow-x-auto">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                         idx === currentImageIndex
                           ? "border-vista-accent scale-110"
                           : "border-white/30 opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={img.url}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>

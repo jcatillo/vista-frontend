@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Share2, Trash2, AlertTriangle } from "lucide-react";
-import { useState } from "react";
-import type { Property } from "../../../../data/properties";
-import { propertyDatabase } from "../../../../data/properties";
+import { useState, useMemo } from "react";
+import type { Property } from "../../../../types/property";
+import { generatePropertyStats } from "../../../../utils/randomUtils";
 
 interface PropertyDetailsActionsProps {
   property: Property;
@@ -17,13 +17,12 @@ interface PropertyDetailsActionsProps {
  * Key features:
  * - Share Listing button (placeholder for future implementation)
  * - Delete Property with safety confirmation dialog
- * - Displays property metrics: Views, Inquiries, Listing Date
+ * - Displays property metrics: Views, Inquiries, Listing Date (with seeded random values)
  *
  * Delete Flow:
  * 1. User clicks "Delete Property" button
  * 2. Confirmation dialog appears with warning message
- * 3. On confirm: Property is removed from propertyDatabase
- * 4. Callback triggers page redirect to properties list
+ * 3. On confirm: Triggers onDelete callback for parent navigation
  */
 export function PropertyDetailsActions({
   property,
@@ -34,16 +33,19 @@ export function PropertyDetailsActions({
   // Track async delete operation to disable button during deletion
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Generate random data only once using useMemo
+  const randomData = useMemo(() => {
+    return generatePropertyStats(property.propertyId);
+  }, [property.propertyId]);
+
   /**
    * Handles confirmed property deletion
-   * - Removes property from propertyDatabase using delete operator
    * - Includes 300ms delay for smooth UX feedback
    * - Triggers onDelete callback for parent navigation
    */
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
     await new Promise((resolve) => setTimeout(resolve, 300));
-    delete propertyDatabase[property.id];
     setIsDeleting(false);
     setShowDeleteConfirm(false);
     onDelete?.();
@@ -111,19 +113,19 @@ export function PropertyDetailsActions({
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Views</span>
             <span className="text-vista-primary font-bold">
-              {property.views}
+              {randomData.views}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Inquiries</span>
             <span className="text-vista-primary font-bold">
-              {property.inquiries}
+              {randomData.inquiries}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Listed</span>
             <span className="text-vista-primary text-xs font-bold">
-              {new Date(property.listingDate).toLocaleDateString()}
+              {new Date(randomData.listingDate).toLocaleDateString()}
             </span>
           </div>
         </div>
