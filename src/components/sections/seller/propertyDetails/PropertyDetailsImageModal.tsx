@@ -127,7 +127,7 @@ export function PropertyDetailsImageModal({
 
               {/* Image Type Indicator */}
               {isPanoramic && (
-                <div className="absolute top-4 left-4 rounded-lg bg-vista-accent/90 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                <div className="bg-vista-accent/90 absolute top-4 left-4 rounded-lg px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                   Panoramic View
                 </div>
               )}
@@ -136,7 +136,7 @@ export function PropertyDetailsImageModal({
               <img
                 src={images[currentImageIndex]?.url}
                 alt={`${property.name} - Image ${currentImageIndex + 1}`}
-                className={`h-full w-full ${isPanoramic ? 'object-cover' : 'object-contain'}`}
+                className={`h-full w-full ${isPanoramic ? "object-cover" : "object-contain"}`}
               />
 
               {/* Navigation Arrows */}

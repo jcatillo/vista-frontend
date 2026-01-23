@@ -101,7 +101,7 @@ export function PropertyDetailsImage({
   // Get display images (handle both single image and array formats)
   const allImages = editImages;
   // Filter to show only regular images in the main gallery
-  const images = allImages.filter(img => img.imageType === "regular");
+  const images = allImages.filter((img) => img.imageType === "regular");
 
   /**
    * Navigate to previous image in gallery (loops to end)
