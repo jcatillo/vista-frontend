@@ -11,6 +11,7 @@ interface Message {
 
 export function MarkAI() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -185,7 +186,11 @@ export function MarkAI() {
       </AnimatePresence>
 
       {/* Floating Button */}
-      <motion.div className="relative">
+      <motion.div
+        className="relative flex items-end justify-end"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <motion.button
           layout
           onClick={() => setIsOpen(!isOpen)}
@@ -223,16 +228,16 @@ export function MarkAI() {
 
         {/* Hover Tooltip */}
         <AnimatePresence>
-          {!isOpen && (
+          {!isOpen && isHovered && (
             <motion.div
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.2 }}
-              className="absolute right-0 bottom-16 rounded-lg bg-gray-900 px-3 py-2 text-sm whitespace-nowrap text-white shadow-lg"
+              className="pointer-events-none absolute right-0 bottom-16 rounded-lg bg-gray-900 px-3 py-2 text-sm whitespace-nowrap text-white shadow-lg"
             >
               Mark AI
-              <motion.div className="absolute right-4 -bottom-1 h-2 w-2 bg-gray-900" />
+              <motion.div className="absolute right-4 -bottom-1 h-2 w-2 rotate-45 bg-gray-900" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -243,7 +248,7 @@ export function MarkAI() {
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="border-vista-primary absolute right-0 bottom-0 h-14 w-14 rounded-full border-2 opacity-30"
+          className="border-vista-primary pointer-events-none absolute right-0 bottom-0 h-14 w-14 rounded-full border-2 opacity-30"
         />
       )}
     </div>
