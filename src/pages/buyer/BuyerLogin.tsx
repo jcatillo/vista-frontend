@@ -19,7 +19,7 @@ export default function BuyerLogin() {
       setIsLoading(false);
       // Navigate to buyer marketplace
       navigate("/buyer/marketplace");
-    }, 1500);
+    }, 500);
   };
 
   return (
