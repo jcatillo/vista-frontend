@@ -46,10 +46,10 @@ export function ImageStep({
         </div>
         {formData.regularImages.length > 0 && (
           <div className="mt-4 grid grid-cols-4 gap-3">
-            {formData.regularImages.map((file, idx) => (
+            {formData.regularImages.map((imageObj, idx) => (
               <div key={idx} className="group relative">
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={URL.createObjectURL(imageObj.file)}
                   alt=""
                   className="h-24 w-full rounded-lg object-cover"
                 />
@@ -90,10 +90,10 @@ export function ImageStep({
         </div>
         {formData.panoramicImages.length > 0 && (
           <div className="mt-4 grid grid-cols-3 gap-3">
-            {formData.panoramicImages.map((file, idx) => (
+            {formData.panoramicImages.map((imageObj, idx) => (
               <div key={idx} className="group relative">
                 <img
-                  src={URL.createObjectURL(file)}
+                  src={URL.createObjectURL(imageObj.file)}
                   alt=""
                   className="h-24 w-full rounded-lg object-cover"
                 />
