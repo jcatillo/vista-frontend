@@ -156,8 +156,8 @@ function DeviceOrientationController() {
     // - gamma controls up/down head nods (pitch) - when phone is horizontal
     
     // Use gamma for pitch (nodding up/down)
-    // Clamp to prevent flipping at extremes
-    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 3, Math.PI / 3);
+    // Increased range to allow looking at ceiling and floor naturally
+    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
     const yaw = alphaRad;
     const roll = 0; // Ignore roll for cleaner VR experience
     
