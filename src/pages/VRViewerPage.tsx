@@ -1,20 +1,81 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
-import { propertyDatabase, type Property } from "../data/properties";
-import { useState, useEffect, useRef } from "react";
-import * as Pannellum from "pannellum";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ChevronLeft, RotateCcw } from "lucide-react";
+import { type Property } from "../types/property";
+import { useState, useEffect } from "react";
+import { PanoramaViewer } from "../components/PanoramaViewer";
+
+const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 export default function VRViewerPage() {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const [property, setProperty] = useState<Property | null>(
-    propertyDatabase[id || "1"]
+  const location = useLocation();
+  const [property] = useState<Property | null>(
+    location.state?.property || null
   );
   const [showUI, setShowUI] = useState(true);
   const [uiTimeout, setUiTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<any>(null);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [orientationPermission, setOrientationPermission] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+
+  // Lock to landscape on mobile and detect orientation
+  useEffect(() => {
+    if (isMobileDevice()) {
+      // Try to lock screen orientation to landscape
+      const lockOrientation = async () => {
+        try {
+          const orientation = screen.orientation as any;
+          if (orientation && orientation.lock) {
+            await orientation.lock('landscape');
+            console.log('Screen locked to landscape');
+          }
+        } catch (err) {
+          console.log('Could not lock orientation:', err);
+        }
+      };
+      lockOrientation();
+
+      // Check current orientation
+      const checkOrientation = () => {
+        setIsPortrait(window.innerHeight > window.innerWidth);
+      };
+      checkOrientation();
+      window.addEventListener('resize', checkOrientation);
+      window.addEventListener('orientationchange', checkOrientation);
+
+      return () => {
+        // Unlock orientation when leaving
+        const orientation = screen.orientation as any;
+        if (orientation && orientation.unlock) {
+          orientation.unlock();
+        }
+        window.removeEventListener('resize', checkOrientation);
+        window.removeEventListener('orientationchange', checkOrientation);
+      };
+    }
+  }, []);
+
+  // Request device orientation permission (iOS 13+)
+  const requestOrientationPermission = async () => {
+    console.log("Requesting orientation permission...");
+    
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+      try {
+        console.log("iOS detected, requesting permission...");
+        const permission = await (DeviceOrientationEvent as any).requestPermission();
+        console.log("Permission result:", permission);
+        setOrientationPermission(permission);
+      } catch (err) {
+        console.error('Orientation permission error:', err);
+        setOrientationPermission('denied');
+      }
+    } else {
+      // Non-iOS devices (Android) don't need permission
+      console.log("Non-iOS device, granting permission automatically");
+      setOrientationPermission('granted');
+    }
+  };
 
   useEffect(() => {
     const handleMouseMove = () => {
@@ -29,12 +90,22 @@ export default function VRViewerPage() {
       setShowUI(false);
     };
 
+    // Also show UI on touch for mobile
+    const handleTouchStart = () => {
+      setShowUI(true);
+      if (uiTimeout) clearTimeout(uiTimeout);
+      const timeout = setTimeout(() => setShowUI(false), 3000);
+      setUiTimeout(timeout);
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("touchstart", handleTouchStart);
 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("touchstart", handleTouchStart);
       if (uiTimeout) clearTimeout(uiTimeout);
     };
   }, [uiTimeout]);
@@ -59,37 +130,73 @@ export default function VRViewerPage() {
     );
   }
 
-  const panoramicImages = property.panoramicImages || [];
+  // Extract panoramic images from the images array (API)
+  const extractedPanoramicImages = (property.images || [])
+    .filter((img: any) => img.imageType === "panoramic")
+    .map((img: any) => ({
+      url: img.url,
+      title: img.filename || "Panoramic View",
+      description: ""
+    }));
 
-  // Initialize Pannellum viewer
-  useEffect(() => {
-    if (!containerRef.current || panoramicImages.length === 0) return;
+  // Use extracted panoramic images if available, otherwise use the panoramicImages array (backward compatibility)
+  const panoramicImages = extractedPanoramicImages.length > 0 ? extractedPanoramicImages : (property.panoramicImages || []);
 
-    viewerRef.current = (Pannellum as any).viewer(containerRef.current, {
-      type: "equirectangular",
-      panorama: panoramicImages[currentImageIndex].url,
-      autoLoad: true,
-      showControls: false,
-      yaw: 0,
-      pitch: 0,
-      hfov: 110,
-    });
-
-    return () => {
-      if (viewerRef.current) {
-        viewerRef.current.destroy();
-      }
-    };
-  }, [currentImageIndex, panoramicImages]);
+  // Debug: Log the panoramic images
+  console.log("Panoramic images:", panoramicImages);
+  if (panoramicImages.length > 0) {
+    console.log("Current image URL:", panoramicImages[currentImageIndex].url);
+  }
 
   return (
     <div className="bg-black w-screen h-screen overflow-hidden fixed top-0 left-0">
-      {/* Pannellum 360 Panorama Viewer - Fullscreen */}
-      <div ref={containerRef} className="w-full h-full" />
+      {/* Portrait Mode Warning for Mobile */}
+      {isMobileDevice() && isPortrait && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-white p-8">
+          <RotateCcw size={64} className="mb-6 animate-pulse" />
+          <h2 className="text-2xl font-bold mb-2 text-center">Rotate Your Device</h2>
+          <p className="text-white/70 text-center mb-6">Please rotate your phone to landscape mode for the best VR experience</p>
+        </div>
+      )}
+
+      {/* iOS Permission Request */}
+      {isMobileDevice() && orientationPermission === 'prompt' && !isPortrait && (
+        <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-white p-8">
+          <h2 className="text-2xl font-bold mb-4 text-center">Enable Motion Controls</h2>
+          <p className="text-white/70 text-center mb-6">Allow device motion to look around by moving your phone</p>
+          <button
+            onClick={requestOrientationPermission}
+            className="px-6 py-3 bg-vista-accent text-white rounded-lg font-semibold hover:bg-vista-accent/80 transition-colors"
+          >
+            Enable Motion Controls
+          </button>
+          <button
+            onClick={() => setOrientationPermission('denied')}
+            className="mt-4 text-white/50 hover:text-white/70 transition-colors"
+          >
+            Skip (use touch instead)
+          </button>
+        </div>
+      )}
+
+      {/* Three.js 360 Panorama Viewer - Fullscreen */}
+      {panoramicImages.length > 0 && (
+        <PanoramaViewer 
+          imageUrl={panoramicImages[currentImageIndex].url}
+          width="100%"
+          height="100%"
+          useDeviceOrientation={isMobileDevice() && orientationPermission === 'granted'}
+        />
+      )}
+      {panoramicImages.length === 0 && (
+        <div className="flex items-center justify-center w-full h-full text-white">
+          <p>No panoramic images available</p>
+        </div>
+      )}
 
       {/* Header Overlay - Auto-hide */}
       <div
-        className={`absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${
+        className={`absolute top-0 left-0 right-0 z-20 bg-linear-to-b from-black/80 to-transparent transition-opacity duration-300 ${
           showUI ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -117,7 +224,7 @@ export default function VRViewerPage() {
       {/* Panoramic Views List - Bottom Overlay - Auto-hide */}
       {panoramicImages.length > 1 && (
         <div
-          className={`absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 to-transparent p-6 transition-opacity duration-300 ${
+          className={`absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/90 to-transparent p-6 transition-opacity duration-300 ${
             showUI ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
@@ -132,7 +239,7 @@ export default function VRViewerPage() {
                   onClick={() => {
                     setCurrentImageIndex(index);
                   }}
-                  className="group relative rounded-lg overflow-hidden border-2 border-white/20 hover:border-vista-accent transition-all flex-shrink-0"
+                  className="group relative rounded-lg overflow-hidden border-2 border-white/20 hover:border-vista-accent transition-all shrink-0"
                 >
                   <div className="w-24 h-24 overflow-hidden">
                     <img
