@@ -3,9 +3,9 @@ import type {
   PropertyFormInput,
   SellerPropertiesResponse,
 } from "../types/property";
+import { env } from "../utils/env";
 
-const BASE_URL =
-  "https://api-gin1-7bsxce1xa-roginandds-projects.vercel.app/api";
+const { BASE_URL } = env;
 
 // Fields that your Python service passes to `_parse_json_array`
 const JSON_FIELDS = [
