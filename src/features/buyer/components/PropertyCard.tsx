@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Heart, BedDouble, Bath, Home } from "lucide-react";
-import type { Property } from "../types/property.types";
+import type { PropertyCardPayload } from "../types/property.types";
 
 interface PropertyCardProps {
-  property: Property;
+  property: PropertyCardPayload;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
@@ -12,9 +12,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
   // Extract city from address (e.g., "123 Ocean Drive, Cebu City, Cebu" -> "Cebu City")
   const cityFromAddress =
     property.address.split(",")[1]?.trim() || property.address;
-
-  // Use featured image or first regular image
-  const displayImage = property.image?.url || property.images?.[0]?.url || "";
 
   const handleClick = () => {
     navigate(`/buyer/property/${property.propertyId}`);
@@ -25,7 +22,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
       {/* Image Container */}
       <div className="relative aspect-square overflow-hidden rounded-xl bg-gray-200">
         <img
-          src={displayImage}
+          src={property.imageUrl}
           alt={property.name}
           className="h-full w-full object-cover"
         />
