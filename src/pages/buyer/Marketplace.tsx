@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import {
   MarketplaceSearch,
   type PropertyFilters,
+  type FilterState,
 } from "../../features/buyer/components/MarketplaceSearch";
 import { PropertyCard } from "../../features/buyer/components/PropertyCard";
 import type { Property } from "../../features/buyer/types/property.types";
@@ -26,6 +27,12 @@ export default function Marketplace() {
   const [filteredProperties, setFilteredProperties] = useState<
     Property[] | null
   >(null);
+  const [filterState, setFilterState] = useState<FilterState>({
+    location: "",
+    propertyType: "",
+    priceRange: "",
+    bedrooms: "",
+  });
   const navigate = useNavigate();
 
   const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -115,7 +122,11 @@ export default function Marketplace() {
 
           {/* Search Bar - Hidden on mobile, shown on md+ */}
           <div className="hidden flex-1 md:block">
-            <MarketplaceSearch onSearch={handleSearch} />
+            <MarketplaceSearch
+              onSearch={handleSearch}
+              filterState={filterState}
+              onFilterChange={setFilterState}
+            />
           </div>
 
           {/* Mobile Filter Button */}
@@ -177,35 +188,43 @@ export default function Marketplace() {
       </motion.div>
 
       {/* Mobile Filters Modal (kept mounted to preserve filter state) */}
-      <motion.div
-        initial={false}
-        animate={
-          showMobileFilters
-            ? { opacity: 1, pointerEvents: "auto" }
-            : { opacity: 0, pointerEvents: "none" }
-        }
-        className="fixed inset-0 z-50 bg-black/50 md:hidden"
-        onClick={() => setShowMobileFilters(false)}
-      >
-        <motion.div
-          initial={false}
-          animate={showMobileFilters ? { y: 0 } : { y: "100%" }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="absolute right-0 bottom-0 left-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-4"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Filters</h2>
-            <button
-              onClick={() => setShowMobileFilters(false)}
-              className="rounded-full p-2 hover:bg-gray-100"
+      <AnimatePresence>
+        {showMobileFilters && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 md:hidden"
+            onClick={() => setShowMobileFilters(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="absolute right-0 bottom-0 left-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-4"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <MarketplaceSearch onSearch={handleSearch} isMobile />
-        </motion.div>
-      </motion.div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Filters</h2>
+                <button
+                  onClick={() => setShowMobileFilters(false)}
+                  className="rounded-full p-2 hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <MarketplaceSearch
+                onSearch={handleSearch}
+                isMobile
+                filterState={filterState}
+                onFilterChange={setFilterState}
+                onClose={() => setShowMobileFilters(false)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 2. Main Content */}
       <main className="mx-auto max-w-full px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-8">

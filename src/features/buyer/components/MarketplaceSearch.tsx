@@ -10,16 +10,71 @@ export interface PropertyFilters {
   bedrooms: number;
 }
 
+export interface FilterState {
+  location: string;
+  propertyType: string;
+  priceRange: string;
+  bedrooms: string;
+}
+
 interface MarketplaceSearchProps {
   onSearch?: (filters: PropertyFilters) => void;
   isMobile?: boolean;
+  filterState?: FilterState;
+  onFilterChange?: (state: FilterState) => void;
+  onClose?: () => void;
 }
 
-export function MarketplaceSearch({ onSearch, isMobile = false }: MarketplaceSearchProps) {
-  const [location, setLocation] = useState("");
-  const [propertyType, setPropertyType] = useState("");
-  const [priceRange, setPriceRange] = useState("");
-  const [bedrooms, setBedrooms] = useState("");
+export function MarketplaceSearch({
+  onSearch,
+  isMobile = false,
+  filterState,
+  onFilterChange,
+  onClose,
+}: MarketplaceSearchProps) {
+  // Use controlled state if provided, otherwise use local state
+  const [localLocation, setLocalLocation] = useState("");
+  const [localPropertyType, setLocalPropertyType] = useState("");
+  const [localPriceRange, setLocalPriceRange] = useState("");
+  const [localBedrooms, setLocalBedrooms] = useState("");
+
+  // Determine whether to use controlled or uncontrolled state
+  const location = filterState?.location ?? localLocation;
+  const propertyType = filterState?.propertyType ?? localPropertyType;
+  const priceRange = filterState?.priceRange ?? localPriceRange;
+  const bedrooms = filterState?.bedrooms ?? localBedrooms;
+
+  const setLocation = (val: string) => {
+    if (onFilterChange) {
+      onFilterChange({ ...filterState!, location: val });
+    } else {
+      setLocalLocation(val);
+    }
+  };
+
+  const setPropertyType = (val: string) => {
+    if (onFilterChange) {
+      onFilterChange({ ...filterState!, propertyType: val });
+    } else {
+      setLocalPropertyType(val);
+    }
+  };
+
+  const setPriceRange = (val: string) => {
+    if (onFilterChange) {
+      onFilterChange({ ...filterState!, priceRange: val });
+    } else {
+      setLocalPriceRange(val);
+    }
+  };
+
+  const setBedrooms = (val: string) => {
+    if (onFilterChange) {
+      onFilterChange({ ...filterState!, bedrooms: val });
+    } else {
+      setLocalBedrooms(val);
+    }
+  };
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showPriceDropdown, setShowPriceDropdown] = useState(false);
@@ -74,10 +129,21 @@ export function MarketplaceSearch({ onSearch, isMobile = false }: MarketplaceSea
   const hasActiveFilters = location || propertyType || priceRange || bedrooms;
 
   const clearAllFilters = () => {
-    setLocation("");
-    setPropertyType("");
-    setPriceRange("");
-    setBedrooms("");
+    if (onFilterChange) {
+      // Clear all at once for controlled state
+      onFilterChange({
+        location: "",
+        propertyType: "",
+        priceRange: "",
+        bedrooms: "",
+      });
+    } else {
+      // Clear local state
+      setLocalLocation("");
+      setLocalPropertyType("");
+      setLocalPriceRange("");
+      setLocalBedrooms("");
+    }
   };
 
   // Mobile layout
@@ -254,7 +320,9 @@ export function MarketplaceSearch({ onSearch, isMobile = false }: MarketplaceSea
               setShowPriceDropdown(false);
             }}
           >
-            {bedrooms ? `${bedrooms} Bedroom${bedrooms !== "1" ? "s" : ""}` : "Any"}
+            {bedrooms
+              ? `${bedrooms} Bedroom${bedrooms !== "1" ? "s" : ""}`
+              : "Any"}
           </button>
           <AnimatePresence>
             {showBedroomsDropdown && (
@@ -303,8 +371,8 @@ export function MarketplaceSearch({ onSearch, isMobile = false }: MarketplaceSea
             </button>
           )}
           <button
-            onClick={handleSearch}
-            className="bg-vista-primary flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-opacity-90"
+            onClick={onClose}
+            className="bg-vista-primary hover:bg-opacity-90 flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold text-white transition-colors"
           >
             <Search className="h-4 w-4" />
             Search

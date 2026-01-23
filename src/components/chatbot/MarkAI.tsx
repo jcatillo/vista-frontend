@@ -59,7 +59,7 @@ export function MarkAI() {
   };
 
   return (
-    <div className="fixed right-3 bottom-3 z-50 sm:right-6 sm:bottom-6">
+    <div className="fixed right-3 bottom-3 z-40 sm:right-6 sm:bottom-6">
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
@@ -68,7 +68,7 @@ export function MarkAI() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed inset-0 z-50 m-0 flex h-screen w-screen flex-col overflow-hidden rounded-none border-0 bg-white shadow-none sm:static sm:mb-4 sm:h-auto sm:w-96 sm:rounded-2xl sm:border sm:border-gray-200 sm:shadow-2xl"
+            className="fixed inset-0 z-40 m-0 flex h-screen w-screen flex-col overflow-hidden rounded-none border-0 bg-white shadow-none sm:static sm:mb-4 sm:h-auto sm:w-96 sm:rounded-2xl sm:border sm:border-gray-200 sm:shadow-2xl"
           >
             {/* Header */}
             <motion.div
