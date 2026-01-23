@@ -76,6 +76,7 @@ function DeviceOrientationController() {
   const { camera } = useThree();
   const orientationData = useRef({ alpha: 0, beta: 0, gamma: 0 });
   const initialAlpha = useRef<number | null>(null);
+  const initialGamma = useRef<number | null>(null);
   const hasReceivedEvent = useRef(false);
 
   useEffect(() => {
@@ -99,10 +100,15 @@ function DeviceOrientationController() {
         initialAlpha.current = event.alpha;
       }
       
+      // Store initial gamma to calibrate eye level
+      if (initialGamma.current === null) {
+        initialGamma.current = event.gamma;
+      }
+      
       orientationData.current = {
         alpha: event.alpha - (initialAlpha.current || 0),
         beta: event.beta,
-        gamma: event.gamma
+        gamma: event.gamma - (initialGamma.current || 0)
       };
     };
 
