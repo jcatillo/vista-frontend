@@ -223,7 +223,22 @@ export function PropertyDetailsPanoramicViews({
     );
   }
 
-  const panoramicImages = property.panoramicImages || [];
+  const panoramicImagesFromType =
+    property.images?.filter((img) => img.imageType === "panoramic") || [];
+  const allPanoramicImages = [
+    ...(property.panoramicImages || []).map((img) => ({
+      url: img.url,
+      title: img.title || "",
+      description: img.description || "",
+      isFromImages: false,
+    })),
+    ...panoramicImagesFromType.map((img) => ({
+      url: img.url,
+      title: img.filename || "",
+      description: "",
+      isFromImages: true,
+    })),
+  ];
 
   return (
     <motion.div
@@ -254,7 +269,7 @@ export function PropertyDetailsPanoramicViews({
         </div>
       </div>
 
-      {panoramicImages.length === 0 ? (
+      {allPanoramicImages.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-vista-text/50 mb-4">
             No panoramic views added yet
@@ -269,7 +284,7 @@ export function PropertyDetailsPanoramicViews({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {panoramicImages.map((image, index) => (
+          {allPanoramicImages.map((image, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.95 }}
