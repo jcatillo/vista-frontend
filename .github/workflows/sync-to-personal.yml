@@ -1,0 +1,21 @@
+name: Sync to Personal Repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Org Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Push to Personal Repo
+        run: |
+          REMOTE_REPO="https://${{ secrets.PERSONAL_GITHUB_TOKEN }}@github.com/AdrianeDriane/vista-frontend.git"
+          git remote add personal $REMOTE_REPO
+          git push personal main --force
