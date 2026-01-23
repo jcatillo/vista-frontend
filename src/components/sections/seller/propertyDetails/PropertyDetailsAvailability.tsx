@@ -52,12 +52,18 @@ export function PropertyDetailsAvailability({
             <input
               type="date"
               value={
-                new Date(formData.availabilityDate).toISOString().split("T")[0]
+                formData.availabilityDate
+                  ? new Date(formData.availabilityDate)
+                      .toISOString()
+                      .split("T")[0]
+                  : ""
               }
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  availabilityDate: new Date(e.target.value).toISOString(),
+                  availabilityDate: e.target.value
+                    ? new Date(e.target.value).toISOString()
+                    : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -86,11 +92,11 @@ export function PropertyDetailsAvailability({
               Pet Policy
             </label>
             <select
-              value={formData.petPolicy}
+              value={formData.petPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  petPolicy: e.target.value,
+                  petPolicy: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -106,11 +112,11 @@ export function PropertyDetailsAvailability({
               Smoking Policy
             </label>
             <select
-              value={formData.smokingPolicy}
+              value={formData.smokingPolicy || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  smokingPolicy: e.target.value,
+                  smokingPolicy: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -167,7 +173,9 @@ export function PropertyDetailsAvailability({
           <div>
             <p className="text-vista-text/60 text-sm">Available From</p>
             <p className="text-vista-primary font-semibold">
-              {new Date(property.availabilityDate).toLocaleDateString()}
+              {property.availabilityDate
+                ? new Date(property.availabilityDate).toLocaleDateString()
+                : "Not specified"}
             </p>
           </div>
         </div>

@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsStatsProps {
   property: Property;
@@ -140,11 +139,11 @@ export function PropertyDetailsStats({
             </label>
             <input
               type="number"
-              value={formData.bedrooms}
+              value={formData.bedrooms || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  bedrooms: parseInt(e.target.value) || 0,
+                  bedrooms: e.target.value ? parseInt(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -156,11 +155,11 @@ export function PropertyDetailsStats({
             </label>
             <input
               type="number"
-              value={formData.bathrooms}
+              value={formData.bathrooms || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  bathrooms: parseInt(e.target.value) || 0,
+                  bathrooms: e.target.value ? parseInt(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -190,11 +189,11 @@ export function PropertyDetailsStats({
             </label>
             <input
               type="number"
-              value={formData.floorArea}
+              value={formData.floorArea || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  floorArea: parseFloat(e.target.value) || null,
+                  floorArea: e.target.value ? parseFloat(e.target.value) : null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"

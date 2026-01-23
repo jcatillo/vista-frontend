@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Edit2, Check, X, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsFeatureListProps {
   property: Property;

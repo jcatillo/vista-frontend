@@ -58,11 +58,11 @@ export function PropertyDetailsFinancial({
               Ownership Status
             </label>
             <select
-              value={formData.ownershipStatus}
+              value={formData.ownershipStatus || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  ownershipStatus: e.target.value,
+                  ownershipStatus: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"
@@ -79,11 +79,11 @@ export function PropertyDetailsFinancial({
             </label>
             <input
               type="text"
-              value={formData.taxStatus}
+              value={formData.taxStatus || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  taxStatus: e.target.value,
+                  taxStatus: e.target.value || null,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"

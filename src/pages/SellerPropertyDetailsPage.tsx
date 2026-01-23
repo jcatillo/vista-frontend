@@ -11,7 +11,6 @@ import {
   PropertyDetailsFeatureList,
   PropertyDetailsAbout,
   PropertyDetailsNearby,
-  PropertyDetailsLocation,
   PropertyDetailsFinancial,
   PropertyDetailsAvailability,
   PropertyDetailsAgent,
@@ -144,11 +143,6 @@ export default function PropertyDetailsPage() {
               />
 
               <PropertyDetailsNearby
-                property={property}
-                onUpdate={handlePropertyUpdate}
-              />
-
-              <PropertyDetailsLocation
                 property={property}
                 onUpdate={handlePropertyUpdate}
               />

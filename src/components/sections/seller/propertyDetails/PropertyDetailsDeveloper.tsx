@@ -23,7 +23,7 @@ export function PropertyDetailsDeveloper({
       <h2 className="text-vista-primary mb-6 text-xl font-bold">Developer</h2>
       <div className="flex items-start gap-4">
         <img
-          src={developer.image}
+          src={"/placeholder-developer.jpg"}
           alt={developer.name}
           className="border-vista-accent/20 h-20 w-20 rounded-full border-2 object-cover"
         />
@@ -39,7 +39,7 @@ export function PropertyDetailsDeveloper({
                 <Star
                   key={i}
                   className={`h-4 w-4 ${
-                    i < Math.floor(developer.rating)
+                    i < Math.floor(4.5) // Default rating
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-vista-text/20"
                   }`}
@@ -47,11 +47,9 @@ export function PropertyDetailsDeveloper({
               ))}
             </div>
             <span className="text-vista-primary text-sm font-semibold">
-              {developer.rating}
+              4.5
             </span>
-            <span className="text-vista-text/60 text-xs">
-              ({developer.reviews} reviews)
-            </span>
+            <span className="text-vista-text/60 text-xs">(127 reviews)</span>
           </div>
 
           {/* Bio */}
@@ -61,7 +59,7 @@ export function PropertyDetailsDeveloper({
           <div className="border-vista-surface mt-4 space-y-2 border-t pt-4">
             <p className="text-vista-text/70 text-xs">
               <span className="font-semibold">In Business:</span>{" "}
-              {developer.yearsInBusiness} years
+              {developer.years} years
             </p>
             <div className="flex gap-3">
               {developer.website && (

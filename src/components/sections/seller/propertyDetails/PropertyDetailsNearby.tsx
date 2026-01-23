@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
 
 interface PropertyDetailsNearbyProps {
   property: Property;
