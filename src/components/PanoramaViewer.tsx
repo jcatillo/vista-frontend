@@ -139,22 +139,21 @@ function DeviceOrientationController() {
   }, []);
 
   useFrame(() => {
-    const { alpha, beta, gamma } = orientationData.current;
+    const { alpha, gamma } = orientationData.current;
     
     // Convert to radians
     const alphaRad = THREE.MathUtils.degToRad(alpha);
-    const betaRad = THREE.MathUtils.degToRad(beta);
     const gammaRad = THREE.MathUtils.degToRad(gamma);
     
-    // For VR box in landscape mode:
+    // For VR box in landscape mode (phone horizontal):
     // - alpha (compass) controls left/right head turns (yaw)
-    // - beta controls up/down head tilts (pitch)
-    // - gamma controls side-to-side head tilts (roll)
+    // - gamma controls up/down head nods (pitch) - when phone is horizontal
     
-    // Adjust beta for landscape orientation (phone is rotated 90 degrees)
-    const pitch = THREE.MathUtils.clamp(betaRad - Math.PI / 2, -Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
+    // Use gamma for pitch (nodding up/down)
+    // Clamp to prevent flipping at extremes
+    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 3, Math.PI / 3);
     const yaw = alphaRad;
-    const roll = -gammaRad; // Negate for correct direction
+    const roll = 0; // Ignore roll for cleaner VR experience
     
     const euler = new THREE.Euler();
     euler.set(pitch, yaw, roll, 'YXZ');
