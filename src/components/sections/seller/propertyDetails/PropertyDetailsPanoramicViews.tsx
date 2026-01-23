@@ -223,20 +223,21 @@ export function PropertyDetailsPanoramicViews({
     );
   }
 
-  const panoramicImagesFromType = property.images?.filter(img => img.imageType === "panoramic") || [];
+  const panoramicImagesFromType =
+    property.images?.filter((img) => img.imageType === "panoramic") || [];
   const allPanoramicImages = [
-    ...(property.panoramicImages || []).map(img => ({
+    ...(property.panoramicImages || []).map((img) => ({
       url: img.url,
       title: img.title || "",
       description: img.description || "",
-      isFromImages: false
+      isFromImages: false,
     })),
-    ...panoramicImagesFromType.map(img => ({
+    ...panoramicImagesFromType.map((img) => ({
       url: img.url,
       title: img.filename || "",
       description: "",
-      isFromImages: true
-    }))
+      isFromImages: true,
+    })),
   ];
 
   return (
