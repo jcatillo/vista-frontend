@@ -5,6 +5,8 @@ import {
   User,
   Settings,
   LogOut,
+  X,
+  Search,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +22,7 @@ import { MarkAI } from "../../components/chatbot/MarkAI";
 
 export default function Marketplace() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [filteredProperties, setFilteredProperties] = useState<
     Property[] | null
   >(null);
@@ -102,18 +105,28 @@ export default function Marketplace() {
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="sticky top-0 z-30 w-full border-b border-gray-100 bg-white py-2 shadow-sm"
       >
-        <div className="mx-auto flex items-center justify-between gap-4 px-4 md:px-8">
+        <div className="mx-auto flex items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-8">
           {/* Logo */}
-          <div className="flex items-center">
-            <h1 className="text-vista-primary font-display text-xl font-bold">
+          <div className="flex shrink-0 items-center">
+            <h1 className="text-vista-primary font-display text-lg font-bold sm:text-xl">
               Vista.Buyer
             </h1>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex-1">
+          {/* Search Bar - Hidden on mobile, shown on md+ */}
+          <div className="hidden flex-1 md:block">
             <MarketplaceSearch onSearch={handleSearch} />
           </div>
+
+          {/* Mobile Filter Button */}
+          <button
+            onClick={() => setShowMobileFilters(true)}
+            className="text-md flex h-9 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white p-2 text-sm transition-all hover:shadow-md md:hidden"
+            aria-label="Open filters"
+          >
+            Filter
+            <Search className="h-5 w-5 text-gray-700" />
+          </button>
 
           {/* Profile Dropdown */}
           <div className="relative">
@@ -163,18 +176,52 @@ export default function Marketplace() {
         </div>
       </motion.div>
 
+      {/* Mobile Filters Modal (kept mounted to preserve filter state) */}
+      <motion.div
+        initial={false}
+        animate={
+          showMobileFilters
+            ? { opacity: 1, pointerEvents: "auto" }
+            : { opacity: 0, pointerEvents: "none" }
+        }
+        className="fixed inset-0 z-50 bg-black/50 md:hidden"
+        onClick={() => setShowMobileFilters(false)}
+      >
+        <motion.div
+          initial={false}
+          animate={showMobileFilters ? { y: 0 } : { y: "100%" }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="absolute right-0 bottom-0 left-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button
+              onClick={() => setShowMobileFilters(false)}
+              className="rounded-full p-2 hover:bg-gray-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <MarketplaceSearch onSearch={handleSearch} isMobile />
+        </motion.div>
+      </motion.div>
+
       {/* 2. Main Content */}
-      <main className="mx-auto max-w-full px-4 py-8 md:px-8">
+      <main className="mx-auto max-w-full px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-8">
         {displaySections.map((section, sectionIndex) => (
-          <div key={section.title} className={sectionIndex > 0 ? "mt-12" : ""}>
+          <div
+            key={section.title}
+            className={sectionIndex > 0 ? "mt-8 sm:mt-12" : ""}
+          >
             {/* Section Header */}
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-vista-primary text-2xl font-bold">
+            <div className="mb-4 flex items-center justify-between sm:mb-6">
+              <h2 className="text-vista-primary text-lg font-bold sm:text-xl md:text-2xl">
                 {section.title}
               </h2>
               {section.properties.length === 0 && (
-                <p className="text-sm text-gray-500">
-                  No properties found matching your criteria
+                <p className="text-xs text-gray-500 sm:text-sm">
+                  No properties found
                 </p>
               )}
             </div>
@@ -182,29 +229,29 @@ export default function Marketplace() {
             {section.properties.length > 0 && (
               /* Horizontal Scroll Container */
               <div className="relative">
-                {/* Left Arrow */}
+                {/* Left Arrow - Hidden on small mobile */}
                 <button
                   onClick={() => scroll(section.title, "left")}
-                  className="absolute top-1/2 left-0 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white p-2 shadow-lg transition-all hover:border-gray-900 hover:shadow-xl"
+                  className="absolute top-1/2 left-0 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white p-1.5 shadow-lg transition-all hover:border-gray-900 hover:shadow-xl sm:block sm:p-2"
                   aria-label="Scroll left"
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
 
-                {/* Right Arrow */}
+                {/* Right Arrow - Hidden on small mobile */}
                 <button
                   onClick={() => scroll(section.title, "right")}
-                  className="absolute top-1/2 right-0 z-10 -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white p-2 shadow-lg transition-all hover:border-gray-900 hover:shadow-xl"
+                  className="absolute top-1/2 right-0 z-10 hidden -translate-y-1/2 cursor-pointer rounded-full border border-gray-300 bg-white p-1.5 shadow-lg transition-all hover:border-gray-900 hover:shadow-xl sm:block sm:p-2"
                   aria-label="Scroll right"
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
 
                 <div
                   ref={(el) => {
                     scrollRefs.current[section.title] = el;
                   }}
-                  className="scrollbar-hide flex gap-6 overflow-x-auto pb-4"
+                  className="scrollbar-hide -mx-3 flex gap-3 overflow-x-auto px-3 pb-4 sm:mx-0 sm:gap-4 sm:px-0 md:gap-6"
                   style={{
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",
@@ -220,7 +267,7 @@ export default function Marketplace() {
                         ease: "easeOut",
                         delay: index * 0.1,
                       }}
-                      className="w-70 shrink-0"
+                      className="w-65 shrink-0 sm:w-70 md:w-75"
                     >
                       <PropertyCard property={property} />
                     </motion.div>

@@ -59,16 +59,16 @@ export function MarkAI() {
   };
 
   return (
-    <div className="fixed right-6 bottom-6 z-50">
+    <div className="fixed right-3 bottom-3 z-50 sm:right-6 sm:bottom-6">
       <AnimatePresence mode="wait">
         {isOpen && (
           <motion.div
             key="chatbox"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="mb-4 flex w-96 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+            className="fixed inset-0 z-50 m-0 flex h-screen w-screen flex-col overflow-hidden rounded-none border-0 bg-white shadow-none sm:static sm:mb-4 sm:h-auto sm:w-96 sm:rounded-2xl sm:border sm:border-gray-200 sm:shadow-2xl"
           >
             {/* Header */}
             <motion.div
@@ -90,7 +90,7 @@ export function MarkAI() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="rounded-full p-1 transition-colors hover:bg-white/20"
+                className="cursor-pointer rounded-full p-1 transition-colors hover:bg-white/20"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -101,7 +101,7 @@ export function MarkAI() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="h-96 overflow-y-auto bg-gray-50 px-4 py-4"
+              className="h-[calc(100vh-200px)] overflow-y-auto bg-gray-50 px-3 py-3 sm:h-96 sm:px-4 sm:py-4"
             >
               <div className="flex flex-col gap-3">
                 {messages.map((message, index) => (
@@ -117,7 +117,7 @@ export function MarkAI() {
                     }`}
                   >
                     <div
-                      className={`max-w-xs rounded-lg px-4 py-2 text-sm ${
+                      className={`max-w-[85%] rounded-lg px-3 py-2 text-sm sm:max-w-xs sm:px-4 ${
                         message.sender === "user"
                           ? "bg-vista-primary rounded-br-none text-white"
                           : "rounded-bl-none bg-white text-gray-900 shadow-sm"
@@ -161,7 +161,7 @@ export function MarkAI() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex gap-2 border-t border-gray-200 bg-white px-4 py-3"
+              className="flex gap-2 border-t border-gray-200 bg-white px-3 py-2 sm:px-4 sm:py-3"
             >
               <input
                 type="text"
@@ -176,7 +176,7 @@ export function MarkAI() {
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSendMessage}
                 disabled={inputValue.trim() === "" || isTyping}
-                className="bg-vista-primary hover:bg-opacity-90 flex items-center justify-center rounded-lg p-2 text-white transition-colors disabled:opacity-50"
+                className="bg-vista-primary hover:bg-opacity-90 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white transition-colors disabled:opacity-50 sm:h-auto sm:w-auto sm:p-2"
               >
                 <Send className="h-4 w-4" />
               </motion.button>
@@ -199,7 +199,7 @@ export function MarkAI() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          className="bg-vista-primary flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition-all hover:shadow-xl"
+          className="bg-vista-primary flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-white shadow-lg transition-all hover:shadow-xl sm:h-14 sm:w-14"
         >
           <AnimatePresence mode="wait">
             {!isOpen ? (
@@ -210,7 +210,7 @@ export function MarkAI() {
                 exit={{ rotate: 180, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <MessageCircle className="h-6 w-6" />
+                <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
               </motion.div>
             ) : (
               <motion.div
@@ -220,13 +220,13 @@ export function MarkAI() {
                 exit={{ rotate: 180, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <X className="h-6 w-6" />
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
               </motion.div>
             )}
           </AnimatePresence>
         </motion.button>
 
-        {/* Hover Tooltip */}
+        {/* Hover Tooltip - Hidden on mobile */}
         <AnimatePresence>
           {!isOpen && isHovered && (
             <motion.div
@@ -234,7 +234,7 @@ export function MarkAI() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
               transition={{ duration: 0.2 }}
-              className="pointer-events-none absolute right-0 bottom-16 rounded-lg bg-gray-900 px-3 py-2 text-sm whitespace-nowrap text-white shadow-lg"
+              className="pointer-events-none absolute right-0 bottom-16 hidden rounded-lg bg-gray-900 px-3 py-2 text-sm whitespace-nowrap text-white shadow-lg sm:block"
             >
               Mark AI
               <motion.div className="absolute right-4 -bottom-1 h-2 w-2 rotate-45 bg-gray-900" />
@@ -248,7 +248,7 @@ export function MarkAI() {
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="border-vista-primary pointer-events-none absolute right-0 bottom-0 h-14 w-14 rounded-full border-2 opacity-30"
+          className="border-vista-primary pointer-events-none absolute right-0 bottom-0 h-12 w-12 rounded-full border-2 opacity-30 sm:h-14 sm:w-14"
         />
       )}
     </div>
