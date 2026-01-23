@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Edit2, Share2, Trash2, AlertTriangle } from "lucide-react";
+import { Share2, Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../data/properties";
 import { propertyDatabase } from "../../../../data/properties";
@@ -12,13 +12,13 @@ interface PropertyDetailsActionsProps {
 
 /**
  * PropertyDetailsActions Component
- * 
+ *
  * Displays action buttons and stats sidebar for property management.
  * Key features:
  * - Share Listing button (placeholder for future implementation)
  * - Delete Property with safety confirmation dialog
  * - Displays property metrics: Views, Inquiries, Listing Date
- * 
+ *
  * Delete Flow:
  * 1. User clicks "Delete Property" button
  * 2. Confirmation dialog appears with warning message
@@ -27,7 +27,6 @@ interface PropertyDetailsActionsProps {
  */
 export function PropertyDetailsActions({
   property,
-  onEditClick,
   onDelete,
 }: PropertyDetailsActionsProps) {
   // Track if delete confirmation dialog is visible
@@ -62,15 +61,18 @@ export function PropertyDetailsActions({
         transition={{ duration: 0.2 }}
         className="lg:col-span-1"
       >
-        <div className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8 sticky top-24 space-y-4">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="bg-red-100 rounded-full p-3">
+        <div className="shadow-soft sticky top-24 space-y-4 rounded-2xl border border-white/50 bg-white p-6 md:p-8">
+          <div className="mb-4 flex items-start gap-4">
+            <div className="rounded-full bg-red-100 p-3">
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-vista-primary">Delete Property?</h3>
-              <p className="text-sm text-vista-text/70 mt-2">
-                Are you sure you want to delete this property listing? This action cannot be undone.
+              <h3 className="text-vista-primary text-lg font-bold">
+                Delete Property?
+              </h3>
+              <p className="text-vista-text/70 mt-2 text-sm">
+                Are you sure you want to delete this property listing? This
+                action cannot be undone.
               </p>
             </div>
           </div>
@@ -78,7 +80,7 @@ export function PropertyDetailsActions({
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 bg-red-600 hover:bg-red-700 text-white font-medium transition-colors disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-3 font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
               {isDeleting ? "Deleting..." : "Yes, Delete Property"}
@@ -86,7 +88,7 @@ export function PropertyDetailsActions({
             <button
               onClick={() => setShowDeleteConfirm(false)}
               disabled={isDeleting}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 font-medium transition-colors disabled:opacity-50"
+              className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex w-full items-center justify-center gap-2 rounded-xl border py-3 font-medium transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
@@ -103,12 +105,14 @@ export function PropertyDetailsActions({
       transition={{ duration: 0.5, delay: 0.2 }}
       className="lg:col-span-1"
     >
-      <div className="bg-white shadow-soft rounded-2xl border border-white/50 p-6 md:p-8 sticky top-24 space-y-4">
+      <div className="shadow-soft sticky top-24 space-y-4 rounded-2xl border border-white/50 bg-white p-6 md:p-8">
         {/* Stats */}
-        <div className="space-y-3 border-b border-vista-surface pb-4">
+        <div className="border-vista-surface space-y-3 border-b pb-4">
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Views</span>
-            <span className="text-vista-primary font-bold">{property.views}</span>
+            <span className="text-vista-primary font-bold">
+              {property.views}
+            </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Inquiries</span>
@@ -118,7 +122,7 @@ export function PropertyDetailsActions({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-vista-text/70 text-sm">Listed</span>
-            <span className="text-vista-primary font-bold text-xs">
+            <span className="text-vista-primary text-xs font-bold">
               {new Date(property.listingDate).toLocaleDateString()}
             </span>
           </div>
@@ -126,12 +130,12 @@ export function PropertyDetailsActions({
 
         {/* Action Buttons */}
         <div className="space-y-3">
-          
-          <button className="border border-vista-surface/30 hover:border-vista-accent hover:bg-vista-accent/5 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-vista-primary font-medium transition-colors">
+          <button className="border-vista-surface/30 hover:border-vista-accent hover:bg-vista-accent/5 text-vista-primary flex w-full items-center justify-center gap-2 rounded-xl border py-3 font-medium transition-colors">
             <Share2 className="h-4 w-4" />
             Share Listing
           </button>
-          <button className="border border-red-200 hover:bg-red-50 w-full flex items-center justify-center gap-2 rounded-xl py-3 text-red-600 font-medium transition-colors"
+          <button
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 py-3 font-medium text-red-600 transition-colors hover:bg-red-50"
             onClick={() => setShowDeleteConfirm(true)}
           >
             <Trash2 className="h-4 w-4" />
