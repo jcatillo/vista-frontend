@@ -1,37 +1,32 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import {
-  BarChart3,
-  Eye,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
-import { allProperties } from "../../../../data/properties";
-
-interface PropertyListing {
-  id: string;
-  name: string;
-  address: string;
-  status: "Active" | "Pending" | "Sold";
-  views: number;
-  image: string;
-  price: string;
-}
-
-const mockProperties: PropertyListing[] = allProperties.map((p) => ({
-  id: p.id,
-  name: p.name,
-  address: p.address,
-  status: p.status,
-  views: p.views,
-  image: p.image,
-  price: p.price,
-}));
+import { useState, useEffect } from "react";
+import { BarChart3, Eye, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { getSellerProperties } from "../../../../services/propertyService";
+import type { SellerPropertyItem } from "../../../../types/property";
+import { generatePropertyStats } from "../../../../utils/randomUtils";
 
 export function ListingsSection() {
   const navigate = useNavigate();
-  
+  const [properties, setProperties] = useState<SellerPropertyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await getSellerProperties();
+        setProperties(response.properties.slice(0, 6)); // Show only first 6 properties
+      } catch (error) {
+        console.error("Failed to fetch properties:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-12">
       {/* Section Header */}
@@ -50,7 +45,7 @@ export function ListingsSection() {
             Manage and monitor your property portfolio
           </p>
         </div>
-        <button 
+        <button
           onClick={() => navigate("/seller/properties")}
           className="text-vista-accent hover:text-vista-primary flex items-center gap-1 text-sm font-medium transition-colors"
         >
@@ -61,41 +56,54 @@ export function ListingsSection() {
 
       {/* Property Cards Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
-        {mockProperties.map((property, idx) => (
-          <PropertyCard
-            key={property.id}
-            property={property}
-            delay={idx * 0.1}
-            onNavigate={() => navigate(`/seller/properties/${property.id}`)}
-          />
-        ))}
+        {loading
+          ? // Loading skeleton
+            Array.from({ length: 6 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="h-64 animate-pulse rounded-2xl bg-gray-200"
+              ></div>
+            ))
+          : properties.map((property, idx) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                delay={idx * 0.1}
+                onNavigate={() => navigate(`/seller/properties/${property.id}`)}
+              />
+            ))}
       </div>
     </section>
   );
 }
 
 interface PropertyCardProps {
-  property: PropertyListing;
+  property: SellerPropertyItem;
   delay: number;
   onNavigate?: () => void;
 }
 
 function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
   const statusConfig = {
-    Active: {
+    published: {
       icon: CheckCircle2,
       color: "text-white bg-green-600",
-      label: "Active",
+      label: "Published",
     },
-    Pending: {
+    pending_review: {
       icon: Clock,
       color: "text-white bg-amber-600",
       label: "Pending Review",
     },
-    Sold: {
+    draft: {
       icon: AlertCircle,
       color: "text-white bg-gray-500",
-      label: "Sold",
+      label: "Draft",
+    },
+    rejected: {
+      icon: AlertCircle,
+      color: "text-white bg-red-600",
+      label: "Rejected",
     },
   };
 
@@ -116,7 +124,7 @@ function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
         {/* Image */}
         <div className="relative aspect-4/3 overflow-hidden">
           <img
-            src={property.image}
+            src={property.image || "/placeholder-property.jpg"}
             alt={property.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -133,7 +141,7 @@ function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
           {/* Price Badge */}
           <div className="bg-vista-primary/90 absolute bottom-3 left-3 rounded-lg px-3 py-1.5 backdrop-blur-sm">
             <span className="text-sm font-bold text-white">
-              {property.price}
+              ₱{property.price.toLocaleString()}
             </span>
           </div>
         </div>
@@ -150,7 +158,9 @@ function PropertyCard({ property, delay, onNavigate }: PropertyCardProps) {
           <div className="flex items-center justify-between">
             <div className="text-vista-text/60 flex items-center gap-1.5 text-xs">
               <Eye className="h-3.5 w-3.5" />
-              <span>{property.views} views</span>
+              <span>
+                {generatePropertyStats(property.propertyId).views} views
+              </span>
             </div>
             <button className="text-vista-accent hover:text-vista-primary text-xs font-medium transition-colors">
               Manage →
