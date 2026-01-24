@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   PropertiesHeader,
   PropertiesStats,
@@ -8,16 +8,22 @@ import {
 import { SellerNavbar, SellerFooter } from "../components/sections/seller";
 
 export default function SellerPropertiesPage() {
+  const propertiesGridRef = useRef<{ refetch: () => void }>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
+  const handlePropertyCreated = () => {
+    propertiesGridRef.current?.refetch();
+  };
+
   return (
     <div className="bg-vista-bg min-h-screen">
       <SellerNavbar />
-      <PropertiesHeader />
+      <PropertiesHeader onPropertyCreated={handlePropertyCreated} />
       <PropertiesStats />
-      <PropertiesGrid />
+      <PropertiesGrid ref={propertiesGridRef} />
       <SellerFooter />
     </div>
   );

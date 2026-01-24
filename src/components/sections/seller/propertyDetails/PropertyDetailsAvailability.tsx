@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Calendar, PawPrint, Cigarette, Edit2, Check, X } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsAvailabilityProps {
   property: Property;
@@ -22,11 +22,35 @@ export function PropertyDetailsAvailability({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    Object.assign(propertyDatabase[property.id], formData);
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (formData.availabilityDate !== property.availabilityDate)
+        changedFields.availabilityDate = formData.availabilityDate;
+      if (formData.minimumLeasePeriod !== property.minimumLeasePeriod)
+        changedFields.minimumLeasePeriod = formData.minimumLeasePeriod;
+      if (formData.petPolicy !== property.petPolicy)
+        changedFields.petPolicy = formData.petPolicy;
+      if (formData.smokingPolicy !== property.smokingPolicy)
+        changedFields.smokingPolicy = formData.smokingPolicy;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

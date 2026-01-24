@@ -7,6 +7,7 @@ import type { AddPropertyModalProps, PropertyFormData } from "./interface";
 import { BasicInfo } from "./Basicinfo";
 import { PropertyDetails } from "./PropertyDetails";
 import { ImageStep } from "./ImageStep";
+import { ThumbnailStep } from "./ThumbnailStep";
 import { PropertyFeaturesForm } from "./DetailsAndPricing";
 import { LocationNearby } from "./LocationNearby";
 import { LegalFinancial } from "./LegalFinancial";
@@ -19,13 +20,14 @@ const STEPS = [
   { id: 1, title: "Basic Information", component: BasicInfo },
   { id: 2, title: "Property Details", component: PropertyDetails },
   { id: 3, title: "Property Images", component: ImageStep },
-  { id: 4, title: "Description & Features", component: PropertyFeaturesForm },
-  { id: 5, title: "Location & Nearby", component: LocationNearby },
-  { id: 6, title: "Legal & Financial", component: LegalFinancial },
-  { id: 7, title: "Availability & Policies", component: AvailabilityPolicies },
-  { id: 8, title: "Agent Information", component: AgentInformationForm },
-  { id: 9, title: "Developer Information", component: DeveloperInformation },
-  { id: 10, title: "Terms & Policies", component: TermsAndPolicies },
+  { id: 4, title: "Select Thumbnail", component: ThumbnailStep },
+  { id: 5, title: "Description & Features", component: PropertyFeaturesForm },
+  { id: 6, title: "Location & Nearby", component: LocationNearby },
+  { id: 7, title: "Legal & Financial", component: LegalFinancial },
+  { id: 8, title: "Availability & Policies", component: AvailabilityPolicies },
+  { id: 9, title: "Agent Information", component: AgentInformationForm },
+  { id: 10, title: "Developer Information", component: DeveloperInformation },
+  { id: 11, title: "Terms & Policies", component: TermsAndPolicies },
 ];
 
 export default function AddPropertyModal({
@@ -35,6 +37,181 @@ export default function AddPropertyModal({
 }: AddPropertyModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = STEPS.length;
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+  const [stepValidationStatus, setStepValidationStatus] = useState<
+    Record<number, boolean | undefined>
+  >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Validation rules for each step
+  const validateStep = (step: number): boolean => {
+    const errors: Record<string, string> = {};
+    const currentData = formData;
+
+    switch (step) {
+      case 1: // Basic Information
+        if (!currentData.name.trim()) errors.name = "Property name is required";
+        if (!currentData.propertyType)
+          errors.propertyType = "Property type is required";
+        if (!currentData.listingType)
+          errors.listingType = "Listing type is required";
+        break;
+
+      case 2: // Property Details
+        if (!currentData.price.trim()) errors.price = "Price is required";
+        if (!currentData.bedrooms.trim())
+          errors.bedrooms = "Number of bedrooms is required";
+        if (!currentData.bathrooms.trim())
+          errors.bathrooms = "Number of bathrooms is required";
+        if (!currentData.floorArea.trim())
+          errors.floorArea = "Floor area is required";
+        if (!currentData.furnishing)
+          errors.furnishing = "Furnishing status is required";
+        if (!currentData.condition)
+          errors.condition = "Property condition is required";
+        break;
+
+      case 3: // Property Images
+        const unlabeledRegular = currentData.regularImages.filter(
+          (img: { file: File; label: string }) => !img.label
+        );
+        const unlabeledPanoramic = currentData.panoramicImages.filter(
+          (img: { file: File; label: string }) => !img.label
+        );
+        if (unlabeledRegular.length > 0 || unlabeledPanoramic.length > 0) {
+          errors.imageLabels =
+            "Please assign room types to all uploaded images";
+        }
+        break;
+
+      case 4: // Select Thumbnail
+        if (currentData.selectedThumbnailIndex === null)
+          errors.selectedThumbnailIndex = "Please select a main thumbnail";
+        break;
+
+      case 5: // Description & Features
+        if (!currentData.description.trim())
+          errors.description = "Property description is required";
+        break;
+
+      case 6: // Location & Nearby
+        if (!currentData.address.trim())
+          errors.address = "Property address is required";
+        break;
+
+      case 7: // Legal & Financial
+        if (!currentData.ownershipStatus.trim())
+          errors.ownershipStatus = "Ownership status is required";
+        break;
+
+      case 8: // Availability & Policies
+        // Optional step - no validation required
+        break;
+
+      case 9: // Agent Information
+        if (!currentData.agentName.trim())
+          errors.agentName = "Agent name is required";
+        if (!currentData.agentPhone.trim())
+          errors.agentPhone = "Agent phone is required";
+        if (!currentData.agentEmail.trim())
+          errors.agentEmail = "Agent email is required";
+        break;
+
+      case 10: // Developer Information (only if hasDeveloper is true)
+        if (currentData.hasDeveloper) {
+          if (!currentData.developerName.trim())
+            errors.developerName = "Developer name is required";
+          if (!currentData.developerPhone.trim())
+            errors.developerPhone = "Developer phone is required";
+          if (!currentData.developerEmail.trim())
+            errors.developerEmail = "Developer email is required";
+        }
+        break;
+
+      case 11: // Terms & Policies
+        if (currentData.terms.length === 0)
+          errors.terms = "At least one term must be selected";
+        break;
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Check if all required fields for the current step are filled
+  const isCurrentStepComplete = (): boolean => {
+    const currentData = formData;
+
+    switch (currentStep) {
+      case 1: // Basic Information
+        return !!(
+          currentData.name.trim() &&
+          currentData.propertyType &&
+          currentData.listingType
+        );
+
+      case 2: // Property Details
+        return !!(
+          currentData.price.trim() &&
+          currentData.bedrooms.trim() &&
+          currentData.bathrooms.trim() &&
+          currentData.floorArea.trim() &&
+          currentData.furnishing &&
+          currentData.condition
+        );
+
+      case 3: // Property Images
+        const hasLabeledRegular =
+          currentData.regularImages.length > 0 &&
+          currentData.regularImages.every(
+            (img: { file: File; label: string }) => img.label
+          );
+        const hasLabeledPanoramic =
+          currentData.panoramicImages.length === 0 ||
+          currentData.panoramicImages.every(
+            (img: { file: File; label: string }) => img.label
+          );
+        return hasLabeledRegular && hasLabeledPanoramic;
+
+      case 4: // Select Thumbnail
+        return currentData.selectedThumbnailIndex !== null;
+
+      case 5: // Description & Features
+        return !!currentData.description.trim();
+
+      case 6: // Location & Nearby
+        return !!currentData.address.trim();
+
+      case 7: // Legal & Financial
+        return !!currentData.ownershipStatus.trim();
+
+      case 9: // Agent Information
+        return !!(
+          currentData.agentName.trim() &&
+          currentData.agentPhone.trim() &&
+          currentData.agentEmail.trim()
+        );
+
+      case 10: // Developer Information (only if hasDeveloper is true)
+        if (currentData.hasDeveloper) {
+          return !!(
+            currentData.developerName.trim() &&
+            currentData.developerPhone.trim() &&
+            currentData.developerEmail.trim()
+          );
+        }
+        return true; // If no developer, step is complete
+
+      case 12: // Terms & Policies
+        return currentData.terms.length > 0;
+
+      default:
+        return true;
+    }
+  };
 
   // Initialize form data with default values
   const [formData, setFormData] = useState<PropertyFormData>({
@@ -48,6 +225,7 @@ export default function AddPropertyModal({
     priceNegotiable: false,
     regularImages: [],
     panoramicImages: [],
+    selectedThumbnailIndex: null,
     bedrooms: "",
     bathrooms: "",
     floorArea: "",
@@ -93,6 +271,21 @@ export default function AddPropertyModal({
 
   const handleInputChange = (field: keyof PropertyFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear validation error for this field when user updates it
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+    // Reset validation status for current step to allow re-attempt
+    if (stepValidationStatus[currentStep] === false) {
+      setStepValidationStatus((prev) => ({
+        ...prev,
+        [currentStep]: undefined,
+      }));
+    }
   };
 
   const handleArrayToggle = (field: keyof PropertyFormData, item: string) => {
@@ -106,10 +299,14 @@ export default function AddPropertyModal({
 
   const handleFileUpload = (
     field: "regularImages" | "panoramicImages",
-    files: FileList | null
+    files: FileList | null,
+    label: string = ""
   ) => {
     if (files) {
-      const fileArray = Array.from(files);
+      const fileArray = Array.from(files).map((file) => ({
+        file,
+        label,
+      }));
       setFormData((prev) => ({
         ...prev,
         [field]: [...prev[field], ...fileArray],
@@ -123,110 +320,153 @@ export default function AddPropertyModal({
   ) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: (prev[field] as File[]).filter((_, i) => i !== index),
+      [field]: (prev[field] as Array<{ file: File; label: string }>).filter(
+        (_, i) => i !== index
+      ),
+    }));
+    // Adjust selected thumbnail index if necessary
+    if (field === "regularImages" && formData.selectedThumbnailIndex !== null) {
+      if (formData.selectedThumbnailIndex === index) {
+        setFormData((prev) => ({ ...prev, selectedThumbnailIndex: null }));
+      } else if (formData.selectedThumbnailIndex > index) {
+        setFormData((prev) => ({
+          ...prev,
+          selectedThumbnailIndex: prev.selectedThumbnailIndex! - 1,
+        }));
+      }
+    }
+  };
+
+  const handleUpdateImageLabel = (
+    field: "regularImages" | "panoramicImages",
+    index: number,
+    label: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: (prev[field] as Array<{ file: File; label: string }>).map(
+        (item, i) => (i === index ? { ...item, label } : item)
+      ),
     }));
   };
 
+  const handleSelectThumbnail = (index: number | null) => {
+    setFormData((prev) => ({ ...prev, selectedThumbnailIndex: index }));
+  };
+
   const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep((prev) => prev + 1);
+    // Validate current step before proceeding
+    if (validateStep(currentStep)) {
+      // Mark this step as validated successfully
+      setStepValidationStatus((prev) => ({
+        ...prev,
+        [currentStep]: true,
+      }));
+
+      if (currentStep < totalSteps) {
+        setCurrentStep((prev) => prev + 1);
+        // Clear validation errors when moving to next step
+        setValidationErrors({});
+      }
+    } else {
+      // Mark this step as failed validation
+      setStepValidationStatus((prev) => ({
+        ...prev,
+        [currentStep]: false,
+      }));
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
+      // Clear validation errors when going back
+      setValidationErrors({});
     }
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
-    onClose();
-    // Reset form
-    setFormData({
-      name: "",
-      propertyType: "",
-      listingType: "",
-      address: "",
-      latitude: "",
-      longitude: "",
-      price: "",
-      priceNegotiable: false,
-      regularImages: [],
-      panoramicImages: [],
-      bedrooms: "",
-      bathrooms: "",
-      floorArea: "",
-      lotArea: "",
-      parkingAvailable: false,
-      parkingSlots: "",
-      floorLevel: "",
-      storeys: "",
-      furnishing: "",
-      condition: "",
-      yearBuilt: "",
-      description: "",
-      amenities: [],
-      interiorFeatures: [],
-      buildingAmenities: [],
-      utilities: [],
-      nearbySchools: [],
-      nearbyHospitals: [],
-      nearbyMalls: [],
-      nearbyTransport: [],
-      nearbyOffices: [],
-      ownershipStatus: "",
-      taxStatus: "",
-      associationDues: "",
-      terms: [],
-      availabilityDate: "",
-      minimumLeasePeriod: "",
-      petPolicy: "",
-      smokingPolicy: "",
-      agentName: "",
-      agentPhone: "",
-      agentEmail: "",
-      agentExperience: "",
-      agentBio: "",
-      hasDeveloper: false,
-      developerName: "",
-      developerWebsite: "",
-      developerPhone: "",
-      developerEmail: "",
-      developerYears: "",
-      developerBio: "",
-    });
-    setCurrentStep(1);
-  };
-
-  const isStepValid = () => {
-    const currentStepData = STEPS[currentStep - 1];
-
-    switch (currentStepData.id) {
-      case 1: // Basic Information
-        return (
-          formData.name &&
-          formData.propertyType &&
-          formData.listingType &&
-          formData.address
+  const handleSubmit = async () => {
+    // Validate final step before submitting
+    if (validateStep(currentStep)) {
+      setIsSubmitting(true);
+      setSubmitError(null);
+      try {
+        await onSubmit(formData);
+        // Reset form and close modal on success
+        setFormData({
+          name: "",
+          propertyType: "",
+          listingType: "",
+          address: "",
+          latitude: "",
+          longitude: "",
+          price: "",
+          priceNegotiable: false,
+          regularImages: [],
+          panoramicImages: [],
+          selectedThumbnailIndex: null,
+          bedrooms: "",
+          bathrooms: "",
+          floorArea: "",
+          lotArea: "",
+          parkingAvailable: false,
+          parkingSlots: "",
+          floorLevel: "",
+          storeys: "",
+          furnishing: "",
+          condition: "",
+          yearBuilt: "",
+          description: "",
+          amenities: [],
+          interiorFeatures: [],
+          buildingAmenities: [],
+          utilities: [],
+          nearbySchools: [],
+          nearbyHospitals: [],
+          nearbyMalls: [],
+          nearbyTransport: [],
+          nearbyOffices: [],
+          ownershipStatus: "",
+          taxStatus: "",
+          associationDues: "",
+          terms: [],
+          availabilityDate: "",
+          minimumLeasePeriod: "",
+          petPolicy: "",
+          smokingPolicy: "",
+          agentName: "",
+          agentPhone: "",
+          agentEmail: "",
+          agentExperience: "",
+          agentBio: "",
+          hasDeveloper: false,
+          developerName: "",
+          developerWebsite: "",
+          developerPhone: "",
+          developerEmail: "",
+          developerYears: "",
+          developerBio: "",
+        });
+        setCurrentStep(1);
+        setValidationErrors({});
+        setStepValidationStatus({});
+        setSubmitError(null);
+        onClose();
+      } catch (error) {
+        // Display error in modal
+        console.error("Submit error:", error);
+        setSubmitError(
+          error instanceof Error ? error.message : "Failed to create property"
         );
-      case 2: // Property Details
-        return (
-          formData.bedrooms &&
-          formData.bathrooms &&
-          formData.floorArea &&
-          formData.price
-        );
-      case 3: // Property Images
-        return formData.regularImages.length > 0;
-      case 4: // Description & Features
-        return formData.description;
-      case 8: // Agent Information
-        return formData.agentName && formData.agentPhone && formData.agentEmail;
-      case 10: // Terms & Policies
-        return formData.terms.length > 0;
-      default:
-        return true;
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      // Mark this step as failed validation
+      setStepValidationStatus((prev) => ({
+        ...prev,
+        [currentStep]: false,
+      }));
     }
   };
 
@@ -290,7 +530,17 @@ export default function AddPropertyModal({
                   onArrayToggle={handleArrayToggle}
                   onFileUpload={handleFileUpload}
                   onRemoveImage={handleRemoveImage}
+                  onUpdateImageLabel={handleUpdateImageLabel}
+                  onSelectThumbnail={handleSelectThumbnail}
+                  validationErrors={validationErrors}
                 />
+
+                {/* Submit Error Display */}
+                {submitError && (
+                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+                    <p className="text-sm text-red-800">{submitError}</p>
+                  </div>
+                )}
               </div>
 
               {/* Footer Actions */}
@@ -307,18 +557,33 @@ export default function AddPropertyModal({
                   {currentStep < totalSteps ? (
                     <button
                       onClick={handleNext}
-                      disabled={!isStepValid()}
-                      className="bg-vista-accent hover:bg-vista-accent/90 rounded-xl px-6 py-2.5 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={!isCurrentStepComplete()}
+                      className={`rounded-xl px-6 py-2.5 font-medium text-white transition-colors disabled:cursor-not-allowed ${
+                        isCurrentStepComplete()
+                          ? "bg-vista-accent hover:bg-vista-accent/90"
+                          : "bg-gray-400 hover:bg-gray-400"
+                      }`}
                     >
                       Next
                     </button>
                   ) : (
                     <button
                       onClick={handleSubmit}
-                      disabled={!isStepValid()}
-                      className="bg-vista-accent hover:bg-vista-accent/90 rounded-xl px-6 py-2.5 font-medium text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={!isCurrentStepComplete() || isSubmitting}
+                      className={`rounded-xl px-6 py-2.5 font-medium text-white transition-colors disabled:cursor-not-allowed ${
+                        isCurrentStepComplete() && !isSubmitting
+                          ? "bg-vista-accent hover:bg-vista-accent/90"
+                          : "bg-gray-400 hover:bg-gray-400"
+                      }`}
                     >
-                      Add Property
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Creating Property...
+                        </div>
+                      ) : (
+                        "Add Property"
+                      )}
                     </button>
                   )}
                 </div>

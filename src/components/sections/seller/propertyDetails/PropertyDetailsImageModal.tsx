@@ -125,12 +125,15 @@ export function PropertyDetailsImageModal({
                 <X className="h-6 w-6" />
               </button>
 
-              {/* Image Type Indicator */}
-              {isPanoramic && (
-                <div className="bg-vista-accent/90 absolute top-4 left-4 rounded-lg px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
-                  Panoramic View
+              {/* Image Label - Upper Right Corner */}
+              <div className="absolute top-4 right-16 z-10">
+                <div className="rounded-lg bg-black/70 px-6 py-3 backdrop-blur-sm">
+                  <p className="text-xl font-bold text-white">
+                    {images[currentImageIndex]?.label ||
+                      (isPanoramic ? "Panoramic View" : "Regular Image")}
+                  </p>
                 </div>
-              )}
+              </div>
 
               {/* Main Image */}
               <img
@@ -160,7 +163,16 @@ export function PropertyDetailsImageModal({
               {/* Image Counter */}
               {images.length > 1 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-lg bg-black/50 px-4 py-2 text-sm font-medium text-white">
-                  {currentImageIndex + 1} / {images.length}
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {currentImageIndex + 1} / {images.length}
+                    </span>
+                    {images[currentImageIndex]?.label && (
+                      <span className="text-vista-accent">
+                        • {images[currentImageIndex].label}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 

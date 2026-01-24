@@ -9,9 +9,7 @@ interface PropertyDetailsDeveloperProps {
 export function PropertyDetailsDeveloper({
   property,
 }: PropertyDetailsDeveloperProps) {
-  const { developer } = property;
-
-  if (!developer) return null;
+  if (!property.hasDeveloper || !property.developerName) return null;
 
   return (
     <motion.div
@@ -24,12 +22,12 @@ export function PropertyDetailsDeveloper({
       <div className="flex items-start gap-4">
         <img
           src={"/placeholder-developer.jpg"}
-          alt={developer.name}
+          alt={property.developerName}
           className="border-vista-accent/20 h-20 w-20 rounded-full border-2 object-cover"
         />
         <div className="flex-1">
           <h3 className="text-vista-primary text-lg font-bold">
-            {developer.name}
+            {property.developerName}
           </h3>
 
           {/* Years in Business */}
@@ -53,18 +51,20 @@ export function PropertyDetailsDeveloper({
           </div>
 
           {/* Bio */}
-          <p className="text-vista-text/80 mt-3 text-sm">{developer.bio}</p>
+          <p className="text-vista-text/80 mt-3 text-sm">
+            {property.developerBio}
+          </p>
 
           {/* Experience & Contact */}
           <div className="border-vista-surface mt-4 space-y-2 border-t pt-4">
             <p className="text-vista-text/70 text-xs">
               <span className="font-semibold">In Business:</span>{" "}
-              {developer.years} years
+              {property.developerYears} years
             </p>
             <div className="flex gap-3">
-              {developer.website && (
+              {property.developerWebsite && (
                 <a
-                  href={developer.website}
+                  href={property.developerWebsite}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-vista-accent/10 hover:bg-vista-accent/20 text-vista-accent flex items-center gap-1.5 rounded-lg px-3 py-2 transition-colors"
@@ -74,14 +74,14 @@ export function PropertyDetailsDeveloper({
                 </a>
               )}
               <a
-                href={`tel:${developer.phone}`}
+                href={`tel:${property.developerPhone}`}
                 className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-1.5 rounded-lg px-3 py-2 text-white transition-colors"
               >
                 <Phone className="h-4 w-4" />
                 <span className="text-xs font-medium">Call</span>
               </a>
               <a
-                href={`mailto:${developer.email}`}
+                href={`mailto:${property.developerEmail}`}
                 className="border-vista-accent hover:bg-vista-accent/5 text-vista-primary flex items-center gap-1.5 rounded-lg border px-3 py-2 transition-colors"
               >
                 <Mail className="h-4 w-4" />

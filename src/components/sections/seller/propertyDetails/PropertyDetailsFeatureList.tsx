@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Edit2, Check, X, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsFeatureListProps {
   property: Property;
@@ -18,10 +19,42 @@ export function PropertyDetailsFeatureList({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (
+        JSON.stringify(formData.interiorFeatures) !==
+        JSON.stringify(property.interiorFeatures)
+      )
+        changedFields.interiorFeatures = formData.interiorFeatures;
+      if (
+        JSON.stringify(formData.buildingAmenities) !==
+        JSON.stringify(property.buildingAmenities)
+      )
+        changedFields.buildingAmenities = formData.buildingAmenities;
+      if (
+        JSON.stringify(formData.utilities) !==
+        JSON.stringify(property.utilities)
+      )
+        changedFields.utilities = formData.utilities;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

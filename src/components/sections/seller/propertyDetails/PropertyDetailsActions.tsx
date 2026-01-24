@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Share2, Trash2, AlertTriangle } from "lucide-react";
+import { Share2, Trash2, AlertTriangle, CheckCircle } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { Property } from "../../../../types/property";
 import { generatePropertyStats } from "../../../../utils/randomUtils";
+import { deleteProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsActionsProps {
   property: Property;
@@ -32,6 +33,8 @@ export function PropertyDetailsActions({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   // Track async delete operation to disable button during deletion
   const [isDeleting, setIsDeleting] = useState(false);
+  // Track successful deletion for success animation
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   // Generate random data only once using useMemo
   const randomData = useMemo(() => {
@@ -40,15 +43,24 @@ export function PropertyDetailsActions({
 
   /**
    * Handles confirmed property deletion
-   * - Includes 300ms delay for smooth UX feedback
-   * - Triggers onDelete callback for parent navigation
+   * - Calls deleteProperty API to remove property from backend
+   * - Shows success animation before triggering onDelete callback
    */
   const handleDeleteConfirm = async () => {
     setIsDeleting(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    setIsDeleting(false);
-    setShowDeleteConfirm(false);
-    onDelete?.();
+    try {
+      await deleteProperty(property.propertyId);
+      setShowDeleteConfirm(false);
+      setShowDeleteSuccess(true);
+      // Navigate after showing success animation
+      setTimeout(() => {
+        onDelete?.();
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to delete property:", error);
+      // TODO: Show error toast
+      setIsDeleting(false);
+    }
   };
 
   /**
@@ -96,6 +108,60 @@ export function PropertyDetailsActions({
             </button>
           </div>
         </div>
+      </motion.div>
+    );
+  }
+
+  /**
+   * Render success animation when delete is completed
+   * Shows checkmark and success message in center of screen before navigation
+   */
+  if (showDeleteSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+          className="mx-4 w-full max-w-sm rounded-2xl border border-green-200 bg-white p-8 shadow-2xl"
+        >
+          <div className="flex flex-col items-center text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.2,
+                type: "spring",
+                stiffness: 200,
+              }}
+              className="mb-6 rounded-full bg-green-100 p-4"
+            >
+              <CheckCircle className="h-12 w-12 text-green-600" />
+            </motion.div>
+            <motion.h3
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.4 }}
+              className="text-vista-primary mb-2 text-xl font-bold"
+            >
+              Property Deleted Successfully
+            </motion.h3>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
+              className="text-vista-text/70 text-sm"
+            >
+              Redirecting you back to your properties...
+            </motion.p>
+          </div>
+        </motion.div>
       </motion.div>
     );
   }

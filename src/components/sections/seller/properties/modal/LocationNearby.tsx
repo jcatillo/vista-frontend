@@ -65,6 +65,20 @@ export function LocationNearby({ formData, onUpdate }: StepProps) {
         </h3>
       </div>
 
+      {/* Address */}
+      <div>
+        <label className="text-vista-text mb-2 block text-sm font-medium">
+          Property Address *
+        </label>
+        <input
+          type="text"
+          value={formData.address}
+          onChange={(e) => onUpdate("address", e.target.value)}
+          placeholder="Enter the full property address"
+          className="border-vista-surface/30 focus:border-vista-accent focus:ring-vista-accent/20 w-full rounded-xl border px-4 py-2.5 transition-all outline-none focus:ring-2"
+        />
+      </div>
+
       {/* Coordinates */}
       <div className="grid grid-cols-2 gap-4">
         <div>
