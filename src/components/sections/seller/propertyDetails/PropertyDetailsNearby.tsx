@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsNearbyProps {
   property: Property;
@@ -35,10 +36,52 @@ export function PropertyDetailsNearby({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (
+        JSON.stringify(formData.nearbySchools) !==
+        JSON.stringify(property.nearbySchools)
+      )
+        changedFields.nearbySchools = formData.nearbySchools;
+      if (
+        JSON.stringify(formData.nearbyHospitals) !==
+        JSON.stringify(property.nearbyHospitals)
+      )
+        changedFields.nearbyHospitals = formData.nearbyHospitals;
+      if (
+        JSON.stringify(formData.nearbyMalls) !==
+        JSON.stringify(property.nearbyMalls)
+      )
+        changedFields.nearbyMalls = formData.nearbyMalls;
+      if (
+        JSON.stringify(formData.nearbyTransport) !==
+        JSON.stringify(property.nearbyTransport)
+      )
+        changedFields.nearbyTransport = formData.nearbyTransport;
+      if (
+        JSON.stringify(formData.nearbyOffices) !==
+        JSON.stringify(property.nearbyOffices)
+      )
+        changedFields.nearbyOffices = formData.nearbyOffices;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

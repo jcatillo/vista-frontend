@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsStatsProps {
   property: Property;
@@ -43,16 +44,44 @@ export function PropertyDetailsStats({
 
   /**
    * Saves edited stats to the database
-   * - Uses Object.assign to mutate propertyDatabase directly
+   * - Uses PATCH API to update only changed fields
    * - Calls onUpdate callback to sync parent component state
-   * - Includes 300ms delay for smooth UX feedback
    */
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (formData.bedrooms !== property.bedrooms)
+        changedFields.bedrooms = formData.bedrooms;
+      if (formData.bathrooms !== property.bathrooms)
+        changedFields.bathrooms = formData.bathrooms;
+      if (formData.storeys !== property.storeys)
+        changedFields.storeys = formData.storeys;
+      if (formData.floorArea !== property.floorArea)
+        changedFields.floorArea = formData.floorArea;
+      if (formData.lotArea !== property.lotArea)
+        changedFields.lotArea = formData.lotArea;
+      if (formData.yearBuilt !== property.yearBuilt)
+        changedFields.yearBuilt = formData.yearBuilt;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   /**

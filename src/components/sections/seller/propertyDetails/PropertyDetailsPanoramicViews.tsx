@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Property } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsPanoramicViewsProps {
   property: Property;
@@ -28,10 +29,32 @@ export function PropertyDetailsPanoramicViews({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (
+        JSON.stringify(formData.panoramicImages) !==
+        JSON.stringify(property.panoramicImages)
+      )
+        changedFields.panoramicImages = formData.panoramicImages;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -253,7 +276,11 @@ export function PropertyDetailsPanoramicViews({
         </h2>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate(`/vr-viewer/${property.id || property.propertyId}`, { state: { property } })}
+            onClick={() =>
+              navigate(`/vr-viewer/${property.id || property.propertyId}`, {
+                state: { property },
+              })
+            }
             className="bg-vista-accent/10 hover:bg-vista-accent/20 text-vista-accent flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
           >
             <Headphones size={18} />

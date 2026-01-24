@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Edit2, Check, X } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsAboutProps {
   property: Property;
@@ -18,10 +19,29 @@ export function PropertyDetailsAbout({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (formData.description !== property.description)
+        changedFields.description = formData.description;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

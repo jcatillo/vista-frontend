@@ -162,7 +162,13 @@ export const PropertiesGrid = forwardRef<
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <button className="text-vista-primary hover:bg-vista-surface/50 flex flex-1 items-center justify-center gap-1 rounded-lg py-2 transition-colors">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/seller/properties/${property.id}`);
+                      }}
+                      className="text-vista-primary hover:bg-vista-surface/50 flex flex-1 items-center justify-center gap-1 rounded-lg py-2 transition-colors"
+                    >
                       <Edit2 className="h-3.5 w-3.5" />
                       <span className="text-xs font-medium">Edit</span>
                     </button>

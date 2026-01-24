@@ -165,6 +165,34 @@ export async function updateProperty(
   return responseData.property;
 }
 
+export async function patchProperty(
+  id: string,
+  data: Partial<Property>
+): Promise<Property> {
+  // For PATCH, we'll use JSON since it's for partial updates
+  // Add user_id as per API doc (temporary until auth is implemented)
+  const patchData = {
+    user_id: "current_user_id", // TODO: get from auth context
+    ...data,
+  };
+
+  const response = await fetch(`${BASE_URL}/properties/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(patchData),
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok || !responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to patch property");
+  }
+
+  return responseData.property;
+}
+
 export async function getProperty(id: string): Promise<Property> {
   const response = await fetch(`${BASE_URL}/properties/${id}`);
   const responseData = await response.json();
@@ -213,12 +241,12 @@ export async function getPropertyCards(
     });
   }
 
-  const url = `${BASE_URL}/buyer/properties${params.toString() ? `?${params}` : ''}`;
+  const url = `${BASE_URL}/buyer/properties${params.toString() ? `?${params}` : ""}`;
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -229,7 +257,9 @@ export async function getPropertyCards(
   const responseData: PropertyCardsResponse = await response.json();
 
   if (!responseData.success) {
-    throw new Error(responseData.error?.message || "Failed to get property cards");
+    throw new Error(
+      responseData.error?.message || "Failed to get property cards"
+    );
   }
 
   return responseData;
@@ -244,9 +274,9 @@ export async function getPropertyDetails(
   const url = `${BASE_URL}/buyer/${propertyId}`;
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
@@ -257,7 +287,9 @@ export async function getPropertyDetails(
   const responseData: PropertyDetailsResponse = await response.json();
 
   if (!responseData.success) {
-    throw new Error(responseData.error?.message || "Failed to get property details");
+    throw new Error(
+      responseData.error?.message || "Failed to get property details"
+    );
   }
 
   return responseData;
@@ -272,9 +304,9 @@ export async function searchProperties(
   const url = `${BASE_URL}/api/buyer/properties/search`;
 
   const response = await fetch(url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(filters),
   });
@@ -286,7 +318,9 @@ export async function searchProperties(
   const responseData: PropertySearchResponse = await response.json();
 
   if (!responseData.success) {
-    throw new Error(responseData.error?.message || "Failed to search properties");
+    throw new Error(
+      responseData.error?.message || "Failed to search properties"
+    );
   }
 
   return responseData;
@@ -308,23 +342,27 @@ export async function getBuyerPropertiesView(
     });
   }
 
-  const url = `${BASE_URL}/buyer/properties-view${params.toString() ? `?${params}` : ''}`;
+  const url = `${BASE_URL}/buyer/properties-view${params.toString() ? `?${params}` : ""}`;
 
   const response = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch buyer properties view: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch buyer properties view: ${response.statusText}`
+    );
   }
 
   const responseData: BuyerPropertiesViewResponse = await response.json();
 
   if (!responseData.success) {
-    throw new Error(responseData.error?.message || "Failed to get buyer properties view");
+    throw new Error(
+      responseData.error?.message || "Failed to get buyer properties view"
+    );
   }
 
   return responseData;
