@@ -122,8 +122,6 @@ export default function PropertyDetailsPage() {
 
               <PropertyDetailsAbout property={property} onUpdate={handlePropertyUpdate} />
               
-              <PropertyDetailsStats property={property} onUpdate={handlePropertyUpdate} />
-
               <PropertyDetailsStats
                 property={property}
                 onUpdate={handlePropertyUpdate}
