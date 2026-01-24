@@ -14,6 +14,7 @@ export interface VirtualStagingSession {
     url: string;
     filename: string;
     imageType: "panoramic";
+    label?: string | null;
   }>;
   staging_parameters: Record<string, any>;
   current_version: number;

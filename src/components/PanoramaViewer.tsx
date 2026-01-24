@@ -9,6 +9,7 @@ interface PanoramaViewerProps {
   height?: string | number;
   onReady?: () => void;
   useDeviceOrientation?: boolean;
+  vrMode?: boolean; // Enable side-by-side stereoscopic VR
 }
 
 function PanoramaScene({ imageUrl, onTextureLoaded }: { imageUrl: string; onTextureLoaded?: () => void }) {
@@ -157,7 +158,8 @@ function DeviceOrientationController() {
     
     // Use gamma for pitch (nodding up/down)
     // Clamp to prevent flipping at extremes
-    const pitch = THREE.MathUtils.clamp(-gammaRad, -Math.PI / 3, Math.PI / 3);
+    // Add -0.3 offset to lower the eye level to natural human eye height
+    const pitch = THREE.MathUtils.clamp(-gammaRad - 0.3, -Math.PI / 3, Math.PI / 3);
     const yaw = alphaRad;
     const roll = 0; // Ignore roll for cleaner VR experience
     

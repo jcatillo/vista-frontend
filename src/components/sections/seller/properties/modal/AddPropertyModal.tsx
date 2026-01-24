@@ -7,7 +7,6 @@ import type { AddPropertyModalProps, PropertyFormData } from "./interface";
 import { BasicInfo } from "./Basicinfo";
 import { PropertyDetails } from "./PropertyDetails";
 import { ImageStep } from "./ImageStep";
-import { RoomLabelStep } from "./RoomLabelStep";
 import { ThumbnailStep } from "./ThumbnailStep";
 import { PropertyFeaturesForm } from "./DetailsAndPricing";
 import { LocationNearby } from "./LocationNearby";
@@ -21,15 +20,14 @@ const STEPS = [
   { id: 1, title: "Basic Information", component: BasicInfo },
   { id: 2, title: "Property Details", component: PropertyDetails },
   { id: 3, title: "Property Images", component: ImageStep },
-  { id: 4, title: "Label Room Types", component: RoomLabelStep },
-  { id: 5, title: "Select Thumbnail", component: ThumbnailStep },
-  { id: 6, title: "Description & Features", component: PropertyFeaturesForm },
-  { id: 7, title: "Location & Nearby", component: LocationNearby },
-  { id: 8, title: "Legal & Financial", component: LegalFinancial },
-  { id: 9, title: "Availability & Policies", component: AvailabilityPolicies },
-  { id: 10, title: "Agent Information", component: AgentInformationForm },
-  { id: 11, title: "Developer Information", component: DeveloperInformation },
-  { id: 12, title: "Terms & Policies", component: TermsAndPolicies },
+  { id: 4, title: "Select Thumbnail", component: ThumbnailStep },
+  { id: 5, title: "Description & Features", component: PropertyFeaturesForm },
+  { id: 6, title: "Location & Nearby", component: LocationNearby },
+  { id: 7, title: "Legal & Financial", component: LegalFinancial },
+  { id: 8, title: "Availability & Policies", component: AvailabilityPolicies },
+  { id: 9, title: "Agent Information", component: AgentInformationForm },
+  { id: 10, title: "Developer Information", component: DeveloperInformation },
+  { id: 11, title: "Terms & Policies", component: TermsAndPolicies },
 ];
 
 export default function AddPropertyModal({
@@ -77,11 +75,6 @@ export default function AddPropertyModal({
         break;
 
       case 3: // Property Images
-        if (currentData.regularImages.length === 0)
-          errors.regularImages = "At least one property image is required";
-        break;
-
-      case 4: // Label Room Types
         const unlabeledRegular = currentData.regularImages.filter(
           (img: { file: File; label: string }) => !img.label
         );
@@ -89,31 +82,36 @@ export default function AddPropertyModal({
           (img: { file: File; label: string }) => !img.label
         );
         if (unlabeledRegular.length > 0 || unlabeledPanoramic.length > 0) {
-          errors.roomLabels = "Please assign room types to all uploaded images";
+          errors.imageLabels =
+            "Please assign room types to all uploaded images";
         }
         break;
 
-      case 5: // Select Thumbnail
+      case 4: // Select Thumbnail
         if (currentData.selectedThumbnailIndex === null)
           errors.selectedThumbnailIndex = "Please select a main thumbnail";
         break;
 
-      case 6: // Description & Features
+      case 5: // Description & Features
         if (!currentData.description.trim())
           errors.description = "Property description is required";
         break;
 
-      case 7: // Location & Nearby
+      case 6: // Location & Nearby
         if (!currentData.address.trim())
           errors.address = "Property address is required";
         break;
 
-      case 8: // Legal & Financial
+      case 7: // Legal & Financial
         if (!currentData.ownershipStatus.trim())
           errors.ownershipStatus = "Ownership status is required";
         break;
 
-      case 10: // Agent Information
+      case 8: // Availability & Policies
+        // Optional step - no validation required
+        break;
+
+      case 9: // Agent Information
         if (!currentData.agentName.trim())
           errors.agentName = "Agent name is required";
         if (!currentData.agentPhone.trim())
@@ -122,7 +120,7 @@ export default function AddPropertyModal({
           errors.agentEmail = "Agent email is required";
         break;
 
-      case 11: // Developer Information (only if hasDeveloper is true)
+      case 10: // Developer Information (only if hasDeveloper is true)
         if (currentData.hasDeveloper) {
           if (!currentData.developerName.trim())
             errors.developerName = "Developer name is required";
@@ -133,7 +131,7 @@ export default function AddPropertyModal({
         }
         break;
 
-      case 12: // Terms & Policies
+      case 11: // Terms & Policies
         if (currentData.terms.length === 0)
           errors.terms = "At least one term must be selected";
         break;
@@ -166,37 +164,38 @@ export default function AddPropertyModal({
         );
 
       case 3: // Property Images
-        return currentData.regularImages.length > 0;
+        const hasLabeledRegular =
+          currentData.regularImages.length > 0 &&
+          currentData.regularImages.every(
+            (img: { file: File; label: string }) => img.label
+          );
+        const hasLabeledPanoramic =
+          currentData.panoramicImages.length === 0 ||
+          currentData.panoramicImages.every(
+            (img: { file: File; label: string }) => img.label
+          );
+        return hasLabeledRegular && hasLabeledPanoramic;
 
-      case 4: // Label Room Types
-        const hasUnlabeledRegular = currentData.regularImages.some(
-          (img: { file: File; label: string }) => !img.label
-        );
-        const hasUnlabeledPanoramic = currentData.panoramicImages.some(
-          (img: { file: File; label: string }) => !img.label
-        );
-        return !hasUnlabeledRegular && !hasUnlabeledPanoramic;
-
-      case 5: // Select Thumbnail
+      case 4: // Select Thumbnail
         return currentData.selectedThumbnailIndex !== null;
 
-      case 6: // Description & Features
+      case 5: // Description & Features
         return !!currentData.description.trim();
 
-      case 7: // Location & Nearby
+      case 6: // Location & Nearby
         return !!currentData.address.trim();
 
-      case 8: // Legal & Financial
+      case 7: // Legal & Financial
         return !!currentData.ownershipStatus.trim();
 
-      case 10: // Agent Information
+      case 9: // Agent Information
         return !!(
           currentData.agentName.trim() &&
           currentData.agentPhone.trim() &&
           currentData.agentEmail.trim()
         );
 
-      case 11: // Developer Information (only if hasDeveloper is true)
+      case 10: // Developer Information (only if hasDeveloper is true)
         if (currentData.hasDeveloper) {
           return !!(
             currentData.developerName.trim() &&
@@ -300,12 +299,13 @@ export default function AddPropertyModal({
 
   const handleFileUpload = (
     field: "regularImages" | "panoramicImages",
-    files: FileList | null
+    files: FileList | null,
+    label: string = ""
   ) => {
     if (files) {
       const fileArray = Array.from(files).map((file) => ({
         file,
-        label: "",
+        label,
       }));
       setFormData((prev) => ({
         ...prev,

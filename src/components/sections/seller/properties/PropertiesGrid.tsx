@@ -7,8 +7,19 @@ import {
   forwardRef,
   useMemo,
 } from "react";
-import { Eye, Home, MapPin, AlertCircle, Trash2, Edit2 } from "lucide-react";
-import { getSellerProperties } from "../../../../services/propertyService";
+import {
+  Eye,
+  Home,
+  MapPin,
+  AlertCircle,
+  Trash2,
+  Edit2,
+  CheckCircle,
+} from "lucide-react";
+import {
+  getSellerProperties,
+  deleteProperty,
+} from "../../../../services/propertyService";
 import type { SellerPropertyItem } from "../../../../types/property";
 import { generatePropertyStats } from "../../../../utils/randomUtils";
 
@@ -28,6 +39,7 @@ export const PropertiesGrid = forwardRef<
   const [properties, setProperties] = useState<SellerPropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   const fetchProperties = async () => {
     try {
@@ -40,6 +52,27 @@ export const PropertiesGrid = forwardRef<
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteProperty = async (propertyId: string) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this property? This action cannot be undone."
+      )
+    ) {
+      try {
+        await deleteProperty(propertyId);
+        setDeleteSuccess(true);
+        // Hide success message after 2 seconds and refetch
+        setTimeout(async () => {
+          setDeleteSuccess(false);
+          await fetchProperties();
+        }, 2000);
+      } catch (error) {
+        console.error("Failed to delete property:", error);
+        // TODO: Show error toast
+      }
     }
   };
 
@@ -91,6 +124,47 @@ export const PropertiesGrid = forwardRef<
           <AlertCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
           <p className="font-medium text-red-600">Error loading properties</p>
           <p className="text-sm text-red-500/80">{error}</p>
+        </motion.div>
+      )}
+
+      {/* Success State */}
+      {deleteSuccess && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+            className="mx-4 w-full max-w-sm rounded-2xl border border-green-200 bg-white p-8 shadow-2xl"
+          >
+            <div className="flex flex-col items-center text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.2,
+                  type: "spring",
+                  stiffness: 200,
+                }}
+                className="mb-6 rounded-full bg-green-100 p-4"
+              >
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 }}
+                className="text-vista-primary text-xl font-bold"
+              >
+                Property deleted successfully
+              </motion.p>
+            </div>
+          </motion.div>
         </motion.div>
       )}
 
@@ -172,7 +246,13 @@ export const PropertiesGrid = forwardRef<
                       <Edit2 className="h-3.5 w-3.5" />
                       <span className="text-xs font-medium">Edit</span>
                     </button>
-                    <button className="text-vista-text/60 flex flex-1 items-center justify-center gap-1 rounded-lg py-2 transition-colors hover:bg-red-500/10 hover:text-red-600">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProperty(property.id);
+                      }}
+                      className="text-vista-text/60 flex flex-1 items-center justify-center gap-1 rounded-lg py-2 transition-colors hover:bg-red-500/10 hover:text-red-600"
+                    >
                       <Trash2 className="h-3.5 w-3.5" />
                       <span className="text-xs font-medium">Delete</span>
                     </button>

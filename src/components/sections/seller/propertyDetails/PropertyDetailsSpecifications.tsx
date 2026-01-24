@@ -36,10 +36,10 @@ export function PropertyDetailsSpecifications({
         changedFields.lotArea = formData.lotArea;
       if (formData.floorLevel !== property.floorLevel)
         changedFields.floorLevel = formData.floorLevel;
-      if (formData.parking.slots !== property.parking.slots)
-        changedFields.parkingSlots = formData.parking.slots;
-      if (formData.parking.available !== property.parking.available)
-        changedFields.parkingAvailable = formData.parking.available;
+      if (formData.parkingSlots !== property.parkingSlots)
+        changedFields.parkingSlots = formData.parkingSlots;
+      if (formData.parkingAvailable !== property.parkingAvailable)
+        changedFields.parkingAvailable = formData.parkingAvailable;
 
       if (Object.keys(changedFields).length > 0) {
         const updatedProperty = await patchProperty(
@@ -133,14 +133,11 @@ export function PropertyDetailsSpecifications({
             </label>
             <input
               type="number"
-              value={formData.parking.slots}
+              value={formData.parkingSlots || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  parking: {
-                    ...prev.parking,
-                    slots: parseInt(e.target.value) || 0,
-                  },
+                  parkingSlots: parseInt(e.target.value) || 0,
                 }))
               }
               className="border-vista-surface/30 focus:border-vista-accent w-full rounded-lg border px-4 py-2 transition-colors focus:outline-none"

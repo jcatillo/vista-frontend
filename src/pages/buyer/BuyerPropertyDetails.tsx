@@ -21,12 +21,678 @@ import {
   Star,
   Check,
   Sparkles,
+  FileText,
+  CreditCard,
+  Calendar,
+  PawPrint,
+  Cigarette,
+  Building2,
+  Globe,
+  Clock,
+  Hospital,
+  Bus,
+  Briefcase,
 } from "lucide-react";
-import type {
-  PropertyDetailsPayload,
-  PropertyImagePayload,
-} from "../../features/buyer/types/property.types";
-import { getPropertyDetails } from "../../services/propertyService";
+import type { Property, PropertyImage } from "../../types/property";
+import { getProperty } from "../../services/propertyService";
+
+// Header Component
+function PropertyHeader() {
+  return (
+    <div className="bg-vista-bg/80 sticky top-0 z-40 backdrop-blur-xl">
+      <div className="mx-auto max-w-6xl px-6 py-4">
+        <button
+          onClick={() => window.history.back()}
+          className="text-vista-text/50 hover:text-vista-primary group flex items-center gap-2 text-sm font-medium transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+          Back
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Property Title Section
+function PropertyTitleSection({ property }: { property: Property }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-4"
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="bg-vista-accent rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-white uppercase">
+          {property.listingType}
+        </span>
+        <span className="text-vista-text/40 text-xs">•</span>
+        <span className="text-vista-text/60 text-sm">{property.propertyType}</span>
+      </div>
+
+      <h1 className="text-vista-primary text-3xl leading-tight font-bold tracking-tight md:text-4xl">
+        {property.name}
+      </h1>
+
+      <div className="text-vista-text/60 flex items-center gap-1.5">
+        <MapPin className="h-4 w-4" />
+        <p className="text-sm">{property.address}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+// Quick Stats Component
+function PropertyQuickStats({ property }: { property: Property }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.15 }}
+      className="border-vista-text/10 flex items-center justify-between border-y py-6"
+    >
+      {[
+        { icon: BedDouble, value: property.bedrooms, label: "Beds" },
+        { icon: Bath, value: property.bathrooms, label: "Baths" },
+        { icon: Home, value: `${property.floorArea}m²`, label: "Area" },
+        { icon: Car, value: property.parkingSlots || 0, label: "Parking" },
+      ].map((stat, idx) => (
+        <div key={idx} className="flex items-center gap-3">
+          <stat.icon className="text-vista-accent h-5 w-5" />
+          <div>
+            <p className="text-vista-primary text-lg font-semibold">{stat.value}</p>
+            <p className="text-vista-text/50 text-xs">{stat.label}</p>
+          </div>
+        </div>
+      ))}
+    </motion.div>
+  );
+}
+
+// About Section
+function PropertyAbout({ property }: { property: Property }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="space-y-4"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">About</h2>
+      <p className="text-vista-text/70 text-[15px] leading-relaxed">
+        {property.description || "No description available for this property."}
+      </p>
+    </motion.div>
+  );
+}
+
+// Details Section
+function PropertyDetails({ property }: { property: Property }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.25 }}
+      className="shadow-vista-primary/5 space-y-5 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Details</h2>
+      <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+        {[
+          { label: "Property Type", value: property.propertyType },
+          { label: "Furnishing", value: property.furnishing || "Unfurnished" },
+          { label: "Condition", value: property.condition || "N/A" },
+          { label: "Lot Area", value: property.lotArea ? `${property.lotArea}m²` : "N/A" },
+          { label: "Year Built", value: property.yearBuilt || "N/A" },
+          { label: "Storeys", value: property.storeys || "N/A" },
+        ].map((detail, idx) => (
+          <div
+            key={idx}
+            className="border-vista-text/5 flex items-center justify-between border-b py-2"
+          >
+            <span className="text-vista-text/50 text-sm">{detail.label}</span>
+            <span className="text-vista-primary text-sm font-medium">{detail.value}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// Features & Amenities Section
+function PropertyFeaturesAmenities({ property }: { property: Property }) {
+  if (
+    !(
+      (property.amenities && property.amenities.length > 0) ||
+      (property.buildingAmenities && property.buildingAmenities.length > 0) ||
+      (property.interiorFeatures && property.interiorFeatures.length > 0) ||
+      (property.utilities && property.utilities.length > 0)
+    )
+  ) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+      className="shadow-vista-primary/5 space-y-6 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Features & Amenities</h2>
+
+      {property.amenities && property.amenities.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
+            General Amenities
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {property.amenities.map((amenity, idx) => (
+              <span
+                key={idx}
+                className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
+              >
+                <Check className="text-vista-accent h-3.5 w-3.5" />
+                {amenity}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {property.interiorFeatures && property.interiorFeatures.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
+            Interior Features
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {property.interiorFeatures.map((feature, idx) => (
+              <span
+                key={idx}
+                className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
+              >
+                <Check className="text-vista-accent h-3.5 w-3.5" />
+                {feature}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {property.buildingAmenities && property.buildingAmenities.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
+            Building / Community
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {property.buildingAmenities.map((amenity, idx) => (
+              <span
+                key={idx}
+                className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
+              >
+                <Check className="text-vista-accent h-3.5 w-3.5" />
+                {amenity}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {property.utilities && property.utilities.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
+            Utilities Included
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {property.utilities.map((utility, idx) => (
+              <span
+                key={idx}
+                className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
+              >
+                <Check className="text-vista-accent h-3.5 w-3.5" />
+                {utility}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Nearby Section
+function PropertyNearby({ property }: { property: Property }) {
+  const nearbyCategories = [
+    {
+      key: "schools",
+      label: "Schools",
+      icon: School,
+      data: property.nearbySchools,
+    },
+    {
+      key: "hospitals",
+      label: "Hospitals",
+      icon: Hospital,
+      data: property.nearbyHospitals,
+    },
+    {
+      key: "malls",
+      label: "Shopping / Malls",
+      icon: ShoppingBag,
+      data: property.nearbyMalls,
+    },
+    {
+      key: "transport",
+      label: "Public Transport",
+      icon: Bus,
+      data: property.nearbyTransport,
+    },
+    {
+      key: "offices",
+      label: "Offices / Business",
+      icon: Briefcase,
+      data: property.nearbyOffices,
+    },
+  ];
+
+  // Check if at least one category has data
+  const hasAnyData = nearbyCategories.some(
+    (cat) => cat.data && cat.data.length > 0
+  );
+
+  if (!hasAnyData) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.35 }}
+      className="shadow-vista-primary/5 space-y-6 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Nearby Establishments</h2>
+      <div className="space-y-5">
+        {nearbyCategories.map((category) => (
+          <div key={category.key} className="flex items-start gap-3">
+            <category.icon className="text-vista-accent mt-0.5 h-5 w-5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-vista-text/60 mb-1 text-sm">{category.label}</p>
+              {category.data && category.data.length > 0 ? (
+                <div className="space-y-1">
+                  {category.data.map((place, idx) => (
+                    <p key={idx} className="text-vista-primary text-sm font-medium">
+                      {place.distance} - {place.name}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-vista-text/40 text-sm italic">None listed</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// Financial Section
+function PropertyFinancial({ property }: { property: Property }) {
+  if (
+    !property.ownershipStatus &&
+    !property.taxStatus &&
+    !property.associationDues &&
+    (!property.terms || property.terms.length === 0)
+  ) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.4 }}
+      className="shadow-vista-primary/5 space-y-6 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Legal & Financial</h2>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        {property.ownershipStatus && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <FileText className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Ownership Status</p>
+              <p className="text-vista-primary font-medium">{property.ownershipStatus}</p>
+            </div>
+          </div>
+        )}
+
+        {property.taxStatus && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <FileText className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Tax Status</p>
+              <p className="text-vista-primary font-medium">{property.taxStatus}</p>
+            </div>
+          </div>
+        )}
+
+        {property.associationDues && property.associationDues > 0 && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <CreditCard className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Association Dues</p>
+              <p className="text-vista-primary font-medium">
+                ₱{property.associationDues.toLocaleString()}/mo
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {property.terms && property.terms.length > 0 && (
+        <div className="border-vista-text/10 border-t pt-4">
+          <p className="text-vista-text/60 mb-3 text-xs font-medium tracking-wider uppercase">
+            Terms & Conditions
+          </p>
+          <ul className="space-y-2">
+            {property.terms.map((term, idx) => (
+              <li key={idx} className="text-vista-text/70 flex items-start gap-2 text-sm">
+                <Check className="text-vista-accent mt-0.5 h-4 w-4 shrink-0" />
+                {term}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Availability Section
+function PropertyAvailability({ property }: { property: Property }) {
+  if (
+    !property.availabilityDate &&
+    !property.minimumLeasePeriod &&
+    !property.petPolicy &&
+    !property.smokingPolicy
+  ) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.45 }}
+      className="shadow-vista-primary/5 space-y-6 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Availability & Policies</h2>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        {property.availabilityDate && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <Calendar className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Available From</p>
+              <p className="text-vista-primary font-medium">
+                {new Date(property.availabilityDate).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {property.minimumLeasePeriod && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <Clock className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Minimum Lease</p>
+              <p className="text-vista-primary font-medium">{property.minimumLeasePeriod}</p>
+            </div>
+          </div>
+        )}
+
+        {property.petPolicy && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <PawPrint className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Pet Policy</p>
+              <p className="text-vista-primary font-medium">{property.petPolicy}</p>
+            </div>
+          </div>
+        )}
+
+        {property.smokingPolicy && (
+          <div className="flex items-center gap-3">
+            <div className="bg-vista-accent/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <Cigarette className="text-vista-accent h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-vista-text/50 text-xs">Smoking Policy</p>
+              <p className="text-vista-primary font-medium">{property.smokingPolicy}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Developer Section
+function PropertyDeveloper({ property }: { property: Property }) {
+  if (!property.hasDeveloper || !property.developerName) {
+    return null;
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.5 }}
+      className="shadow-vista-primary/5 space-y-5 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <h2 className="text-vista-primary text-xl font-semibold">Developer Information</h2>
+      
+      <div className="flex items-center gap-4">
+        <div className="from-vista-primary to-vista-accent flex h-14 w-14 items-center justify-center rounded-xl bg-linear-to-br">
+          <Building2 className="h-7 w-7 text-white" />
+        </div>
+        <div>
+          <h3 className="text-vista-primary text-lg font-semibold">{property.developerName}</h3>
+          {property.developerYears && (
+            <p className="text-vista-text/50 text-sm">{property.developerYears} years in business</p>
+          )}
+        </div>
+      </div>
+
+      {property.developerBio && (
+        <p className="text-vista-text/70 text-sm leading-relaxed">{property.developerBio}</p>
+      )}
+
+      <div className="flex flex-wrap gap-3">
+        {property.developerPhone && (
+          <a
+            href={`tel:${property.developerPhone}`}
+            className="bg-vista-primary hover:bg-vista-primary/90 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition-all"
+          >
+            <Phone className="h-4 w-4" />
+            {property.developerPhone}
+          </a>
+        )}
+        {property.developerEmail && (
+          <a
+            href={`mailto:${property.developerEmail}`}
+            className="bg-vista-text/5 text-vista-primary hover:bg-vista-text/10 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </a>
+        )}
+        {property.developerWebsite && (
+          <a
+            href={property.developerWebsite}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-vista-text/5 text-vista-primary hover:bg-vista-text/10 inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+          >
+            <Globe className="h-4 w-4" />
+            Website
+          </a>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+// Price Card Component
+function PriceCard({ property }: { property: Property }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+      className="shadow-vista-primary/5 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <div className="mb-6">
+        <p className="text-vista-text/50 mb-1 text-xs tracking-wider uppercase">
+          {property.listingType === "For Rent" ? "Monthly Rent" : "Price"}
+        </p>
+        <div className="flex items-baseline gap-1">
+          <span className="text-vista-primary text-3xl font-bold">
+            ₱{property.price.toLocaleString()}
+          </span>
+          {property.listingType === "For Rent" && (
+            <span className="text-vista-text/40 text-sm">/mo</span>
+          )}
+        </div>
+        {property.priceNegotiable && (
+          <span className="text-vista-accent mt-2 inline-block text-xs font-medium">
+            Price negotiable
+          </span>
+        )}
+        {property.associationDues && property.associationDues > 0 && (
+          <p className="text-vista-text/50 mt-2 text-xs">
+            + ₱{property.associationDues.toLocaleString()}/mo association dues
+          </p>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <button className="bg-vista-primary hover:bg-vista-primary/90 hover:shadow-vista-primary/20 w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:shadow-lg">
+          Schedule a Visit
+        </button>
+        <button className="bg-vista-primary/5 text-vista-primary hover:bg-vista-primary/10 w-full rounded-xl py-3.5 text-sm font-semibold transition-all">
+          Contact Agent
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// AI Staging Card Component
+function AIVirtualStagingCard({ property, navigate }: { property: Property; navigate: ReturnType<typeof useNavigate> }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.25 }}
+      className="from-vista-accent to-vista-primary relative overflow-hidden rounded-2xl bg-linear-to-br p-6 text-white"
+    >
+      <div className="absolute top-0 right-0 h-32 w-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
+      <div className="relative">
+        <div className="mb-3 flex items-center gap-2">
+          <Sparkles className="h-5 w-5" />
+          <h3 className="font-semibold">AI Virtual Staging</h3>
+        </div>
+        <p className="mb-4 text-sm leading-relaxed text-white/80">
+          Transform empty rooms into beautifully designed spaces with AI-powered staging.
+        </p>
+        <button
+          onClick={() =>
+            navigate(`/vr-viewer/${property.propertyId}`, {
+              state: { property, startIndex: 0 },
+            })
+          }
+          className="text-vista-primary w-full rounded-xl bg-white py-3 text-sm font-semibold transition-all hover:bg-white/90"
+        >
+          Try AI Staging
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// Agent Card Component
+function AgentCard({ property }: { property: Property }) {
+  if (!property.agentName) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+      className="shadow-vista-primary/5 rounded-2xl bg-white p-6 shadow-sm"
+    >
+      <p className="text-vista-text/50 mb-4 text-xs tracking-wider uppercase">Listed by</p>
+      <div className="mb-5 flex items-center gap-4">
+        <div className="from-vista-accent to-vista-primary flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br">
+          <span className="text-lg font-semibold text-white">{property.agentName.charAt(0)}</span>
+        </div>
+        <div>
+          <h4 className="text-vista-primary font-semibold">{property.agentName}</h4>
+          <div className="mt-0.5 flex items-center gap-2">
+            <span className="text-vista-text/50 text-sm">Real Estate Agent</span>
+            {property.agentExperience && (
+              <>
+                <span className="text-vista-text/30">•</span>
+                <span className="text-vista-text/50 flex items-center gap-1 text-sm">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  {property.agentExperience}y exp
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        {property.agentPhone && (
+          <a
+            href={`tel:${property.agentPhone}`}
+            className="bg-vista-primary hover:bg-vista-primary/90 flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-all"
+          >
+            <Phone className="h-4 w-4" />
+            Call
+          </a>
+        )}
+        {property.agentEmail && (
+          <a
+            href={`mailto:${property.agentEmail}`}
+            className="bg-vista-text/5 text-vista-primary hover:bg-vista-text/10 flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
+          >
+            <Mail className="h-4 w-4" />
+            Email
+          </a>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 // Image Gallery Modal
 function ImageGalleryModal({
   images,
@@ -34,7 +700,7 @@ function ImageGalleryModal({
   onClose,
   onNavigate,
 }: {
-  images: PropertyImagePayload[];
+  images: PropertyImage[];
   currentIndex: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
@@ -47,6 +713,8 @@ function ImageGalleryModal({
       if (e.key === "ArrowRight")
         onNavigate(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
     };
+
+    console.log(images[currentIndex]?.label);
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentIndex, images.length, onClose, onNavigate]);
@@ -79,6 +747,18 @@ function ImageGalleryModal({
       >
         <ChevronLeft className="h-6 w-6" />
       </button>
+
+      {/* Image Label - Upper Right Corner */}
+      {images[currentIndex]?.label && (
+        <div className="absolute top-6 right-20 z-10">
+          <div className="rounded-lg bg-black/70 px-6 py-3 backdrop-blur-sm">
+            <p className="text-xl font-bold text-white">
+              {images[currentIndex].label}
+            </p>
+          </div>
+        </div>
+      )}
+
       <motion.img
         key={currentIndex}
         initial={{
@@ -98,6 +778,7 @@ function ImageGalleryModal({
         className="max-h-[85vh] max-w-[85vw] rounded-2xl object-contain shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       />
+
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -108,7 +789,16 @@ function ImageGalleryModal({
         <ChevronRight className="h-6 w-6" />
       </button>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-5 py-2.5 text-sm font-medium text-white backdrop-blur-md">
-        {currentIndex + 1} / {images.length}
+        <div className="flex items-center gap-3">
+          <span>
+            {currentIndex + 1} / {images.length}
+          </span>
+          {images[currentIndex]?.label && (
+            <span className="text-vista-accent">
+              • {images[currentIndex].label}
+            </span>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -118,12 +808,12 @@ function PropertyImageGallery({
   property,
   onImageExpanded,
 }: {
-  property: PropertyDetailsPayload;
+  property: Property;
   onImageExpanded: (expanded: boolean, imageIndex: number) => void;
 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const allImages: PropertyImagePayload[] = property.images;
+  const allImages: PropertyImage[] = property.images || [];
   const images = allImages.filter((img) => img.imageType === "regular");
   const panoramicImages = allImages.filter(
     (img) => img.imageType === "panoramic"
@@ -259,7 +949,7 @@ function PropertyImageGallery({
                 </div>
                 <div className="absolute inset-0 flex items-end justify-center bg-black/0 pb-1 transition-colors group-hover:bg-black/40">
                   <p className="px-1 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                    {img.id || `View ${idx + 1}`}
+                    {img.label || img.id || `View ${idx + 1}`}
                   </p>
                 </div>
               </button>
@@ -273,7 +963,7 @@ function PropertyImageGallery({
 export default function BuyerPropertyDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [property, setProperty] = useState<PropertyDetailsPayload | null>(null);
+  const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
@@ -286,8 +976,8 @@ export default function BuyerPropertyDetails() {
       try {
         setLoading(true);
         setError(null);
-        const response = await getPropertyDetails(id);
-        setProperty(response.property);
+        const response = await getProperty(id);
+        setProperty(response);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load property"
@@ -300,7 +990,7 @@ export default function BuyerPropertyDetails() {
     fetchProperty();
   }, [id]);
 
-  const allImages: PropertyImagePayload[] = property?.images || [];
+  const allImages: PropertyImage[] = property?.images || [];
   if (loading) {
     return (
       <div className="bg-vista-bg flex min-h-screen items-center justify-center">
@@ -396,73 +1086,19 @@ export default function BuyerPropertyDetails() {
         )}
       </AnimatePresence>
 
-      {/* Minimal Header */}
-      <div className="bg-vista-bg/80 sticky top-0 z-40 backdrop-blur-xl">
-        <div className="mx-auto max-w-6xl px-6 py-4">
-          <button
-            onClick={() => navigate("/buyer/marketplace")}
-            className="text-vista-text/50 hover:text-vista-primary group flex items-center gap-2 text-sm font-medium transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-            Back
-          </button>
-        </div>
-      </div>
+      <PropertyHeader />
 
       {/* Main Content */}
       <div className="mx-auto max-w-6xl px-6 pb-20">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           {/* Left Column */}
           <div className="space-y-10 lg:col-span-7">
-            {/* Property Header */}
+            <PropertyTitleSection property={property} />
+
             <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-              }}
-              className="space-y-4"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-vista-accent rounded-full px-3 py-1 text-xs font-semibold tracking-wide text-white uppercase">
-                  {property.listingType}
-                </span>
-                <span className="text-vista-text/40 text-xs">•</span>
-                <span className="text-vista-text/60 text-sm">
-                  {property.propertyType}
-                </span>
-              </div>
-
-              <h1 className="text-vista-primary text-3xl leading-tight font-bold tracking-tight md:text-4xl">
-                {property.name}
-              </h1>
-
-              <div className="text-vista-text/60 flex items-center gap-1.5">
-                <MapPin className="h-4 w-4" />
-                <p className="text-sm">{property.address}</p>
-              </div>
-            </motion.div>
-
-            {/* Image Gallery */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-                delay: 0.1,
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
             >
               <PropertyImageGallery
                 property={property}
@@ -473,446 +1109,22 @@ export default function BuyerPropertyDetails() {
               />
             </motion.div>
 
-            {/* Quick Stats - Horizontal Bar */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-                delay: 0.15,
-              }}
-              className="border-vista-text/10 flex items-center justify-between border-y py-6"
-            >
-              {[
-                {
-                  icon: BedDouble,
-                  value: property.bedrooms,
-                  label: "Beds",
-                },
-                {
-                  icon: Bath,
-                  value: property.bathrooms,
-                  label: "Baths",
-                },
-                {
-                  icon: Home,
-                  value: `${property.floorArea}m²`,
-                  label: "Area",
-                },
-                {
-                  icon: Car,
-                  value: property.parkingSlots || 0,
-                  label: "Parking",
-                },
-              ].map((stat, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <stat.icon className="text-vista-accent h-5 w-5" />
-                  <div>
-                    <p className="text-vista-primary text-lg font-semibold">
-                      {stat.value}
-                    </p>
-                    <p className="text-vista-text/50 text-xs">{stat.label}</p>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-
-            {/* About */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-                delay: 0.2,
-              }}
-              className="space-y-4"
-            >
-              <h2 className="text-vista-primary text-xl font-semibold">
-                About
-              </h2>
-              <p className="text-vista-text/70 text-[15px] leading-relaxed">
-                {property.description ||
-                  "No description available for this property."}
-              </p>
-            </motion.div>
-
-            {/* Property Details */}
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              transition={{
-                duration: 0.5,
-                delay: 0.25,
-              }}
-              className="space-y-5"
-            >
-              <h2 className="text-vista-primary text-xl font-semibold">
-                Details
-              </h2>
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-                {[
-                  {
-                    label: "Property Type",
-                    value: property.propertyType,
-                  },
-                  {
-                    label: "Furnishing",
-                    value: property.furnishing || "Unfurnished",
-                  },
-                  {
-                    label: "Condition",
-                    value: property.condition || "N/A",
-                  },
-                  {
-                    label: "Lot Area",
-                    value: property.lotArea ? `${property.lotArea}m²` : "N/A",
-                  },
-                  {
-                    label: "Year Built",
-                    value: property.yearBuilt || "N/A",
-                  },
-                  {
-                    label: "Storeys",
-                    value: property.storeys || "N/A",
-                  },
-                ].map((detail, idx) => (
-                  <div
-                    key={idx}
-                    className="border-vista-text/5 flex items-center justify-between border-b py-2"
-                  >
-                    <span className="text-vista-text/50 text-sm">
-                      {detail.label}
-                    </span>
-                    <span className="text-vista-primary text-sm font-medium">
-                      {detail.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Features & Amenities */}
-            {((property.amenities && property.amenities.length > 0) ||
-              (property.buildingAmenities &&
-                property.buildingAmenities.length > 0) ||
-              (property.interiorFeatures &&
-                property.interiorFeatures.length > 0)) && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.3,
-                }}
-                className="space-y-6"
-              >
-                <h2 className="text-vista-primary text-xl font-semibold">
-                  Features & Amenities
-                </h2>
-
-                {property.interiorFeatures &&
-                  property.interiorFeatures.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
-                        Interior
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {property.interiorFeatures.map((feature, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
-                          >
-                            <Check className="text-vista-accent h-3.5 w-3.5" />
-                            {feature}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                {property.buildingAmenities &&
-                  property.buildingAmenities.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-vista-text/60 text-xs font-medium tracking-wider uppercase">
-                        Building
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {property.buildingAmenities.map((amenity, idx) => (
-                          <span
-                            key={idx}
-                            className="bg-vista-accent/5 text-vista-text/80 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm"
-                          >
-                            <Check className="text-vista-accent h-3.5 w-3.5" />
-                            {amenity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </motion.div>
-            )}
-
-            {/* Nearby */}
-            {((property.nearbySchools && property.nearbySchools.length > 0) ||
-              (property.nearbyMalls && property.nearbyMalls.length > 0) ||
-              (property.nearbyHospitals &&
-                property.nearbyHospitals.length > 0)) && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.35,
-                }}
-                className="space-y-6"
-              >
-                <h2 className="text-vista-primary text-xl font-semibold">
-                  Nearby
-                </h2>
-                <div className="grid gap-8 md:grid-cols-2">
-                  {property.nearbySchools &&
-                    property.nearbySchools.length > 0 && (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <School className="text-vista-accent h-4 w-4" />
-                          <h3 className="text-vista-primary text-sm font-medium">
-                            Schools
-                          </h3>
-                        </div>
-                        <div className="space-y-2">
-                          {property.nearbySchools.map((place, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-baseline gap-3 text-sm"
-                            >
-                              <span className="text-vista-accent min-w-12 text-xs font-semibold">
-                                {place.distance}
-                              </span>
-                              <span className="text-vista-text/70">
-                                {place.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  {property.nearbyMalls && property.nearbyMalls.length > 0 && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <ShoppingBag className="text-vista-accent h-4 w-4" />
-                        <h3 className="text-vista-primary text-sm font-medium">
-                          Shopping
-                        </h3>
-                      </div>
-                      <div className="space-y-2">
-                        {property.nearbyMalls.map((place, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-baseline gap-3 text-sm"
-                          >
-                            <span className="text-vista-accent min-w-12 text-xs font-semibold">
-                              {place.distance}
-                            </span>
-                            <span className="text-vista-text/70">
-                              {place.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
+            <PropertyQuickStats property={property} />
+            <PropertyAbout property={property} />
+            <PropertyDetails property={property} />
+            <PropertyFeaturesAmenities property={property} />
+            <PropertyNearby property={property} />
+            <PropertyFinancial property={property} />
+            <PropertyAvailability property={property} />
+            <PropertyDeveloper property={property} />
           </div>
 
           {/* Right Column - Sidebar */}
           <div className="lg:col-span-5">
             <div className="sticky top-20 space-y-5">
-              {/* Price Card */}
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.2,
-                }}
-                className="shadow-vista-primary/5 rounded-2xl bg-white p-6 shadow-sm"
-              >
-                <div className="mb-6">
-                  <p className="text-vista-text/50 mb-1 text-xs tracking-wider uppercase">
-                    {property.listingType === "For Rent"
-                      ? "Monthly Rent"
-                      : "Price"}
-                  </p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-vista-primary text-3xl font-bold">
-                      ₱{property.price.toLocaleString()}
-                    </span>
-                    {property.listingType === "For Rent" && (
-                      <span className="text-vista-text/40 text-sm">/mo</span>
-                    )}
-                  </div>
-                  {property.priceNegotiable && (
-                    <span className="text-vista-accent mt-2 inline-block text-xs font-medium">
-                      Price negotiable
-                    </span>
-                  )}
-                  {property.associationDues && property.associationDues > 0 && (
-                    <p className="text-vista-text/50 mt-2 text-xs">
-                      + ₱{property.associationDues.toLocaleString()}/mo
-                      association dues
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <button className="bg-vista-primary hover:bg-vista-primary/90 hover:shadow-vista-primary/20 w-full rounded-xl py-3.5 text-sm font-semibold text-white transition-all hover:shadow-lg">
-                    Schedule a Visit
-                  </button>
-                  <button className="bg-vista-primary/5 text-vista-primary hover:bg-vista-primary/10 w-full rounded-xl py-3.5 text-sm font-semibold transition-all">
-                    Contact Agent
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* AI Virtual Staging */}
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 20,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.5,
-                  delay: 0.25,
-                }}
-                className="from-vista-accent to-vista-primary relative overflow-hidden rounded-2xl bg-linear-to-br p-6 text-white"
-              >
-                <div className="absolute top-0 right-0 h-32 w-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-white/10 blur-3xl" />
-                <div className="relative">
-                  <div className="mb-3 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    <h3 className="font-semibold">AI Virtual Staging</h3>
-                  </div>
-                  <p className="mb-4 text-sm leading-relaxed text-white/80">
-                    Transform empty rooms into beautifully designed spaces with
-                    AI-powered staging.
-                  </p>
-                  <button className="text-vista-primary w-full rounded-xl bg-white py-3 text-sm font-semibold transition-all hover:bg-white/90">
-                    Try AI Staging
-                  </button>
-                </div>
-              </motion.div>
-
-              {/* Agent Card */}
-              {property.agentName && (
-                <motion.div
-                  initial={{
-                    opacity: 0,
-                    y: 20,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.3,
-                  }}
-                  className="shadow-vista-primary/5 rounded-2xl bg-white p-6 shadow-sm"
-                >
-                  <p className="text-vista-text/50 mb-4 text-xs tracking-wider uppercase">
-                    Listed by
-                  </p>
-                  <div className="mb-5 flex items-center gap-4">
-                    <div className="from-vista-accent to-vista-primary flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br">
-                      <span className="text-lg font-semibold text-white">
-                        {property.agentName.charAt(0)}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="text-vista-primary font-semibold">
-                        {property.agentName}
-                      </h4>
-                      <div className="mt-0.5 flex items-center gap-2">
-                        <span className="text-vista-text/50 text-sm">
-                          Real Estate Agent
-                        </span>
-                        {property.agentExperience && (
-                          <>
-                            <span className="text-vista-text/30">•</span>
-                            <span className="text-vista-text/50 flex items-center gap-1 text-sm">
-                              <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                              {property.agentExperience}y exp
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {property.agentPhone && (
-                      <a
-                        href={`tel:${property.agentPhone}`}
-                        className="bg-vista-primary hover:bg-vista-primary/90 flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-all"
-                      >
-                        <Phone className="h-4 w-4" />
-                        Call
-                      </a>
-                    )}
-                    {property.agentEmail && (
-                      <a
-                        href={`mailto:${property.agentEmail}`}
-                        className="bg-vista-text/5 text-vista-primary hover:bg-vista-text/10 flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all"
-                      >
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </a>
-                    )}
-                  </div>
-                </motion.div>
-              )}
+              <PriceCard property={property} />
+              <AIVirtualStagingCard property={property} navigate={navigate} />
+              <AgentCard property={property} />
             </div>
           </div>
         </div>
@@ -920,3 +1132,4 @@ export default function BuyerPropertyDetails() {
     </div>
   );
 }
+       

@@ -37,6 +37,29 @@ export const LISTING_TYPES: ListingType[] = [
   "For Lease",
 ];
 
+// Room Type Enum for Image Labeling
+export const ROOM_TYPES = [
+  "Living Room",
+  "Kitchen",
+  "Master Bedroom",
+  "Bedroom",
+  "Bathroom",
+  "Dining Room",
+  "Home Office",
+  "Balcony/Terrace",
+  "Garden/Yard",
+  "Garage",
+  "Hallway",
+  "Staircase",
+  "Basement",
+  "Attic",
+  "Laundry Room",
+  "Storage Room",
+  "Other",
+] as const;
+
+export type RoomType = (typeof ROOM_TYPES)[number];
+
 // --- Sub-Models ---
 
 export interface NearbyEstablishment {
@@ -50,6 +73,7 @@ export interface PropertyImage {
   thumbnailUrl?: string | null;
   filename: string;
   imageType: "regular" | "panoramic";
+  label?: RoomType | null; // Room/area type label for the image
 }
 
 // --- Main Domain Model (Matches Pydantic 'class Property') ---
@@ -81,10 +105,6 @@ export interface Property {
   // Parking
   parkingAvailable: boolean;
   parkingSlots?: number | null;
-  parking: {
-    available: boolean;
-    slots?: number;
-  };
 
   // Building Details
   floorLevel?: string | null;
@@ -108,13 +128,6 @@ export interface Property {
   nearbyMalls: NearbyEstablishment[];
   nearbyTransport: NearbyEstablishment[];
   nearbyOffices: NearbyEstablishment[];
-  nearbyEstablishments?: {
-    schools: Array<{ distance: string; name: string }>;
-    hospitals: Array<{ distance: string; name: string }>;
-    malls: Array<{ distance: string; name: string }>;
-    publicTransport: Array<{ distance: string; name: string }>;
-    offices: Array<{ distance: string; name: string }>;
-  };
 
   // Legal & Financial
   ownershipStatus?: string | null;
@@ -134,23 +147,6 @@ export interface Property {
   agentEmail?: string | null;
   agentExperience?: number | null;
   agentBio?: string | null;
-  contactInfo: {
-    agentName: string;
-    phone: string;
-    email: string;
-  };
-  agent?: {
-    id: string;
-    name: string;
-    title: string;
-    image: string;
-    phone: string;
-    email: string;
-    experience: string;
-    rating: number;
-    reviews: number;
-    bio: string;
-  };
 
   // Developer Information
   hasDeveloper: boolean;
@@ -160,14 +156,6 @@ export interface Property {
   developerEmail?: string | null;
   developerYears?: number | null;
   developerBio?: string | null;
-  developer: {
-    name: string;
-    website?: string;
-    phone?: string;
-    email?: string;
-    years?: number;
-    bio?: string;
-  };
 
   // Ratings
   ratings: {
@@ -199,45 +187,47 @@ export interface Property {
 }
 
 // --- Form Input Interface ---
-// Matches the API form data structure from the curl example
+// Matches the API form data structure for property creation/editing
 
-export interface PropertyFormInput {
+export interface PropertyFormData {
   // Basic Information
   name: string;
-  propertyType: PropertyType;
-  listingType: ListingType;
+  propertyType: PropertyType | "";
+  listingType: ListingType | "";
   address: string;
-  latitude?: string;
-  longitude?: string;
+  latitude: string;
+  longitude: string;
 
   // Pricing
   price: string;
   priceNegotiable: boolean;
 
-  // Images
+  // Images with labels
   regularImages: File[];
   panoramicImages: File[];
-  image?: File;
+  regularImageLabels: (RoomType | "")[];
+  panoramicImageLabels: (RoomType | "")[];
+  selectedThumbnailIndex: number | null;
 
   // Property Specifications
-  bedrooms?: string;
-  bathrooms?: string;
-  floorArea?: string;
-  lotArea?: string;
+  bedrooms: string;
+  bathrooms: string;
+  floorArea: string;
+  lotArea: string;
 
   // Parking
   parkingAvailable: boolean;
-  parkingSlots?: string;
+  parkingSlots: string;
 
   // Building Details
-  floorLevel?: string;
-  storeys?: string;
-  furnishing?: FurnishingStatus;
-  condition?: PropertyCondition;
-  yearBuilt?: string;
+  floorLevel: string;
+  storeys: string;
+  furnishing: FurnishingStatus | "";
+  condition: PropertyCondition | "";
+  yearBuilt: string;
 
   // Property Description
-  description?: string;
+  description: string;
 
   // Features & Amenities
   amenities: string[];
@@ -245,7 +235,7 @@ export interface PropertyFormInput {
   buildingAmenities: string[];
   utilities: string[];
 
-  // Nearby
+  // Nearby Establishments
   nearbySchools: NearbyEstablishment[];
   nearbyHospitals: NearbyEstablishment[];
   nearbyMalls: NearbyEstablishment[];
@@ -280,11 +270,7 @@ export interface PropertyFormInput {
   developerYears?: string;
   developerBio?: string;
 
-  // Images
-  mainImage?: File;
-
-  // System fields
-  status?: PropertyStatus;
+  // Metadata
   user_id: string;
 }
 

@@ -1,10 +1,9 @@
 import { motion } from "framer-motion";
-import { Search, Plus, SlidersHorizontal } from "lucide-react";
+import { Search, Plus, SlidersHorizontal, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import AddPropertyModal from "./modal/AddPropertyModal";
 import { createProperty } from "../../../../services/propertyService";
 import type { PropertyFormData } from "./modal/interface";
-import type { PropertyFormInput } from "../../../../types/property";
 
 interface PropertiesHeaderProps {
   onPropertyCreated?: () => void;
@@ -12,7 +11,7 @@ interface PropertiesHeaderProps {
 
 export function PropertiesHeader({ onPropertyCreated }: PropertiesHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const handlePropertySubmit = async (propertyData: PropertyFormData) => {
     // Convert PropertyFormData to match API expectations
@@ -24,19 +23,13 @@ export function PropertiesHeader({ onPropertyCreated }: PropertiesHeaderProps) {
           ? propertyData.regularImages[0]
           : undefined;
 
-    // Extract files from image objects
-    const regularFiles = propertyData.regularImages.map((img) => img.file);
-    const panoramicFiles = propertyData.panoramicImages.map((img) => img.file);
-
     // Helper to convert empty strings to undefined
     const toUndefinedIfEmpty = (
       value: string | undefined
     ): string | undefined => (value === "" ? undefined : value);
 
-    const formInput: PropertyFormInput = {
+    const formInput: PropertyFormData = {
       ...propertyData,
-      regularImages: regularFiles,
-      panoramicImages: panoramicFiles,
       // Ensure propertyType and listingType have valid values
       propertyType: (propertyData.propertyType || "House") as any,
       listingType: (propertyData.listingType || "For Sale") as any,
@@ -47,18 +40,21 @@ export function PropertiesHeader({ onPropertyCreated }: PropertiesHeaderProps) {
       image: selectedThumbnail?.file,
       // Keep as strings, let backend handle conversion
       // Add required fields
-      status: "draft" as const,
-      user_id: "user_123456", // TODO: Get from auth context
     };
 
     console.log("Submitting property:", formInput);
     await createProperty(formInput);
     console.log("Property created successfully");
-    setSuccessMessage("Property created successfully!");
-    onPropertyCreated?.();
 
-    // Clear success message after 5 seconds
-    setTimeout(() => setSuccessMessage(null), 5000);
+    // Close modal and show success animation
+    setIsModalOpen(false);
+    setShowSuccessAnimation(true);
+
+    // Refresh properties and hide animation after delay
+    onPropertyCreated?.();
+    setTimeout(() => {
+      setShowSuccessAnimation(false);
+    }, 2000);
   };
 
   return (
@@ -69,15 +65,52 @@ export function PropertiesHeader({ onPropertyCreated }: PropertiesHeaderProps) {
         onSubmit={handlePropertySubmit}
       />
 
-      {/* Success Message */}
-      {successMessage && (
+      {/* Success Animation */}
+      {showSuccessAnimation && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          className="fixed top-4 right-4 z-50 rounded-lg bg-green-500 px-6 py-3 text-white shadow-lg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
         >
-          {successMessage}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+            className="mx-4 w-full max-w-sm rounded-2xl border border-green-200 bg-white p-8 shadow-2xl"
+          >
+            <div className="flex flex-col items-center text-center">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.2,
+                  type: "spring",
+                  stiffness: 200,
+                }}
+                className="mb-6 rounded-full bg-green-100 p-4"
+              >
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </motion.div>
+              <motion.h3
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 }}
+                className="text-vista-primary mb-2 text-xl font-bold"
+              >
+                Property Added Successfully
+              </motion.h3>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+                className="text-vista-text/70 text-sm"
+              >
+                Your property has been added to your listings
+              </motion.p>
+            </div>
+          </motion.div>
         </motion.div>
       )}
 

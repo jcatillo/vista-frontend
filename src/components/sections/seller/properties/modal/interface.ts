@@ -73,6 +73,7 @@ export interface PropertyFormData {
   developerEmail: string;
   developerYears: string;
   developerBio: string;
+  image?: File; // Main image file for thumbnail upload
 }
 
 export interface AddPropertyModalProps {
@@ -87,7 +88,8 @@ export interface StepProps {
   onArrayToggle: (field: keyof PropertyFormData, item: string) => void;
   onFileUpload: (
     field: "regularImages" | "panoramicImages",
-    files: FileList | null
+    files: FileList | null,
+    label?: RoomType | ""
   ) => void;
   onRemoveImage: (
     field: "regularImages" | "panoramicImages",
@@ -96,7 +98,7 @@ export interface StepProps {
   onUpdateImageLabel: (
     field: "regularImages" | "panoramicImages",
     index: number,
-    label: string
+    label: RoomType | ""
   ) => void;
   onSelectThumbnail: (index: number | null) => void;
   validationErrors: Record<string, string>;

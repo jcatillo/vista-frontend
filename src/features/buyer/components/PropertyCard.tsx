@@ -32,6 +32,17 @@ export function PropertyCard({ property }: PropertyCardProps) {
           {property.listingType}
         </div>
 
+        {/* Image Label - Upper Right Corner */}
+        {property.imageLabel && (
+          <div className="absolute top-3 right-12">
+            <div className="rounded-lg bg-black/70 px-3 py-1 backdrop-blur-sm">
+              <p className="text-sm font-semibold text-white">
+                {property.imageLabel}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Heart Icon */}
         <button className="absolute top-3 right-3 rounded-full p-1 transition-transform active:scale-90">
           <Heart className="h-6 w-6 text-white/70 hover:text-white" />

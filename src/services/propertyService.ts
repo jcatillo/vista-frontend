@@ -1,8 +1,5 @@
-import type {
-  Property,
-  PropertyFormInput,
-  SellerPropertiesResponse,
-} from "../types/property";
+import type { Property, SellerPropertiesResponse } from "../types/property";
+import type { PropertyFormData } from "../components/sections/seller/properties/modal/interface";
 import type {
   PropertyCardsQuery,
   PropertyCardsResponse,
@@ -11,11 +8,11 @@ import type {
   PropertySearchResponse,
   BuyerPropertiesViewQuery,
   BuyerPropertiesViewResponse,
+  DeletePropertyResponse,
 } from "../features/buyer/types/property.types";
-import { env } from "../utils/env";
+import env from "../utils/env";
 
 const { BASE_URL } = env;
-
 // Fields that your Python service passes to `_parse_json_array`
 const JSON_FIELDS = [
   "amenities",
@@ -34,7 +31,7 @@ const JSON_FIELDS = [
  * Transforms the Typed Object into FormData.
  * STRICTLY matches the parsing logic in Python `PropertyService._parse_property_data`
  */
-function createFormData(data: Partial<PropertyFormInput>): FormData {
+function createFormData(data: Partial<PropertyFormData>): FormData {
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
@@ -48,14 +45,17 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
       value[0] !== null &&
       "file" in value[0]
     ) {
+      const labels: string[] = [];
       (value as unknown as Array<{ file: File; label: string }>).forEach(
         (imageObj) => {
           formData.append("regularImages", imageObj.file);
-          formData.append(`regularImages_labels`, imageObj.label);
+          labels.push(imageObj.label);
         }
       );
+      formData.append("regularImageLabels", JSON.stringify(labels));
       return;
     }
+
     if (
       key === "panoramicImages" &&
       Array.isArray(value) &&
@@ -64,12 +64,14 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
       value[0] !== null &&
       "file" in value[0]
     ) {
+      const labels: string[] = [];
       (value as unknown as Array<{ file: File; label: string }>).forEach(
         (imageObj) => {
           formData.append("panoramicImages", imageObj.file);
-          formData.append(`panoramicImages_labels`, imageObj.label);
+          labels.push(imageObj.label);
         }
       );
+      formData.append("panoramicImageLabels", JSON.stringify(labels));
       return;
     }
 
@@ -114,12 +116,10 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
 // --- Exported Endpoints ---
 
 export async function createProperty(
-  data: PropertyFormInput
+  data: PropertyFormData
 ): Promise<Property> {
   console.log("Creating property with data keys:", Object.keys(data));
   console.log("Creating property with data:", data);
-  console.log("mainImage type:", data.mainImage?.constructor?.name);
-  console.log("mainImage instanceof File:", data.mainImage instanceof File);
 
   const formData = createFormData(data);
 
@@ -147,7 +147,7 @@ export async function createProperty(
 
 export async function updateProperty(
   id: string,
-  data: Partial<PropertyFormInput>
+  data: Partial<PropertyFormData>
 ): Promise<Property> {
   const formData = createFormData(data);
 
@@ -363,6 +363,31 @@ export async function getBuyerPropertiesView(
     throw new Error(
       responseData.error?.message || "Failed to get buyer properties view"
     );
+  }
+
+  return responseData;
+}
+
+export async function deleteProperty(
+  id: string
+): Promise<DeletePropertyResponse> {
+  const url = `${BASE_URL}/properties/${id}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete property: ${response.statusText}`);
+  }
+
+  const responseData = await response.json();
+
+  if (!responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to delete property");
   }
 
   return responseData;

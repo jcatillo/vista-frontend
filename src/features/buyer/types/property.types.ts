@@ -4,6 +4,7 @@ export interface PropertyImage {
   url: string;
   thumbnailUrl: string | null;
   imageType: "regular" | "panoramic";
+  label?: string | null; // Room/area type label for the image
 }
 
 export interface NearbyPlace {
@@ -101,6 +102,7 @@ export interface PropertyCardPayload {
   propertyType: string;
   furnishing?: string;
   imageUrl: string;
+  imageLabel?: string | null; // Label for the main image
 }
 
 export interface PropertyDetailsPayload {
@@ -142,6 +144,7 @@ export interface PropertyImagePayload {
   id: string;
   url: string;
   imageType: string;
+  label?: string | null; // Room/area type label for the image
 }
 
 // API Query and Response interfaces
@@ -216,6 +219,15 @@ export interface BuyerPropertiesViewResponse {
     bedrooms?: string;
   };
   error?: {
+    message: string;
+  };
+}
+
+export interface DeletePropertyResponse {
+  success: boolean;
+  message?: string;
+  error?: {
+    code: string;
     message: string;
   };
 }

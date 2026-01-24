@@ -39,6 +39,7 @@ export default function Marketplace() {
   const [sectionProperties, setSectionProperties] = useState<{
     [key: string]: PropertyCardPayload[];
   }>({});
+  const [allProperties, setAllProperties] = useState<PropertyCardPayload[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filterState, setFilterState] = useState<FilterState>({
@@ -48,6 +49,7 @@ export default function Marketplace() {
     bedrooms: "",
   });
   const navigate = useNavigate();
+  const hasLoadedRef = useRef(false);
 
   const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -84,58 +86,49 @@ export default function Marketplace() {
     },
   ];
 
-  // Load all property sections on component mount
+  // Load all properties once on component mount
   useEffect(() => {
-    const loadAllSections = async () => {
+    // Prevent double calls by checking if we've already loaded
+    if (hasLoadedRef.current) {
+      return;
+    }
+
+    const loadAllProperties = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const allSections: { [key: string]: PropertyCardPayload[] } = {};
+        // Single API call to get all properties
+        const response = await getBuyerPropertiesView({});
+        const properties = response.properties;
+        setAllProperties(properties);
 
-        // Load each section with different filters
-        for (const section of sections) {
-          let apiFilters: any = {};
-
-          switch (section.id) {
-            case "popular":
-              apiFilters = {}; // All properties
-              break;
-            case "affordable-rentals":
-              apiFilters = { maxPrice: 15000 };
-              break;
-            case "new-listings":
-              apiFilters = {}; // Could add date filtering later
-              break;
-            case "luxury-properties":
-              apiFilters = { minPrice: 20000000 };
-              break;
-            case "best-value":
-              apiFilters = { minPrice: 10000000, maxPrice: 30000000 };
-              break;
-          }
-
-          try {
-            const response = await getBuyerPropertiesView(apiFilters);
-            allSections[section.id] = response.properties;
-          } catch (err) {
-            console.error(`Error loading ${section.id}:`, err);
-            allSections[section.id] = [];
-          }
-        }
-
-        setSectionProperties(allSections);
+        // Organize properties into sections on the client side
+        const organized: { [key: string]: PropertyCardPayload[] } = {};
+        organized["popular"] = properties.slice(0, 10);
+        organized["affordable-rentals"] = properties.filter(
+          (p) => p.price <= 15000
+        );
+        organized["new-listings"] = properties.slice(0, 8);
+        organized["luxury-properties"] = properties.filter(
+          (p) => p.price >= 20000000
+        );
+        organized["best-value"] = properties.filter(
+          (p) => p.price >= 10000000 && p.price <= 30000000
+        );
+        setSectionProperties(organized);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load properties"
         );
-        console.error("Error loading property sections:", err);
+        console.error("Error loading properties:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadAllSections();
+    hasLoadedRef.current = true;
+    loadAllProperties();
   }, []);
 
   const scroll = (key: string, direction: "left" | "right") => {
@@ -152,93 +145,65 @@ export default function Marketplace() {
     }
   };
 
-  const handleClearFilters = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      setFilterState({
-        location: "",
-        propertyType: "",
-        priceRange: "",
-        bedrooms: "",
-      });
+  const handleClearFilters = () => {
+    setFilterState({
+      location: "",
+      propertyType: "",
+      priceRange: "",
+      bedrooms: "",
+    });
 
-      // Reload all sections
-      const allSections: { [key: string]: PropertyCardPayload[] } = {};
-
-      for (const section of sections) {
-        let apiFilters: any = {};
-
-        switch (section.id) {
-          case "popular":
-            apiFilters = {};
-            break;
-          case "affordable-rentals":
-            apiFilters = { maxPrice: 15000 };
-            break;
-          case "new-listings":
-            apiFilters = {};
-            break;
-          case "luxury-properties":
-            apiFilters = { minPrice: 20000000 };
-            break;
-          case "best-value":
-            apiFilters = { minPrice: 10000000, maxPrice: 30000000 };
-            break;
-        }
-
-        try {
-          const response = await getBuyerPropertiesView(apiFilters);
-          allSections[section.id] = response.properties;
-        } catch (err) {
-          console.error(`Error loading ${section.id}:`, err);
-          allSections[section.id] = [];
-        }
-      }
-
-      setSectionProperties(allSections);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to reload properties"
-      );
-      console.error("Error clearing filters:", err);
-    } finally {
-      setLoading(false);
-    }
+    // Reset to organized sections
+    const organized: { [key: string]: PropertyCardPayload[] } = {};
+    organized["popular"] = allProperties.slice(0, 10);
+    organized["affordable-rentals"] = allProperties.filter(
+      (p) => p.price <= 15000
+    );
+    organized["new-listings"] = allProperties.slice(0, 8);
+    organized["luxury-properties"] = allProperties.filter(
+      (p) => p.price >= 20000000
+    );
+    organized["best-value"] = allProperties.filter(
+      (p) => p.price >= 10000000 && p.price <= 30000000
+    );
+    setSectionProperties(organized);
   };
 
   const handleLogout = () => {
     navigate("/get-started");
   };
 
-  const handleSearch = async (filters: PropertyFilters) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const handleSearch = (filters: PropertyFilters) => {
+    // Client-side filtering of all properties
+    const filtered = allProperties.filter((property) => {
+      if (
+        filters.location &&
+        !property.address.toLowerCase().includes(filters.location.toLowerCase())
+      ) {
+        return false;
+      }
+      if (
+        filters.propertyType &&
+        property.propertyType !== filters.propertyType
+      ) {
+        return false;
+      }
+      if (filters.minPrice > 0 && property.price < filters.minPrice) {
+        return false;
+      }
+      if (filters.maxPrice < Infinity && property.price > filters.maxPrice) {
+        return false;
+      }
+      if (filters.bedrooms > 0 && property.bedrooms !== filters.bedrooms) {
+        return false;
+      }
+      return true;
+    });
 
-      // Convert PropertyFilters to BuyerPropertiesViewQuery
-      const apiFilters = {
-        location: filters.location || undefined,
-        propertyType: filters.propertyType || undefined,
-        minPrice: filters.minPrice > 0 ? filters.minPrice : undefined,
-        maxPrice: filters.maxPrice < Infinity ? filters.maxPrice : undefined,
-        bedrooms: filters.bedrooms > 0 ? filters.bedrooms : undefined,
-      };
-
-      const response = await getBuyerPropertiesView(apiFilters);
-
-      // When user searches, show all results in a single section
-      setSectionProperties({
-        "search-results": response.properties,
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to search properties"
-      );
-      console.error("Error searching properties:", err);
-    } finally {
-      setLoading(false);
-    }
+    // When user searches, show filtered results in a single section
+    setSectionProperties({
+      "search-results": filtered,
+    });
   };
 
   // Loading state

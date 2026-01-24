@@ -25,7 +25,7 @@ export function PropertyDetailsContact({
           <div>
             <p className="text-vista-text/60 text-sm">Agent / Owner Name</p>
             <p className="text-vista-primary font-semibold">
-              {property.contactInfo.agentName}
+              {property.agentName}
             </p>
           </div>
         </div>
@@ -34,10 +34,10 @@ export function PropertyDetailsContact({
           <div>
             <p className="text-vista-text/60 text-sm">Phone Number</p>
             <a
-              href={`tel:${property.contactInfo.phone}`}
+              href={`tel:${property.agentPhone}`}
               className="text-vista-primary hover:text-vista-accent font-semibold transition-colors"
             >
-              {property.contactInfo.phone}
+              {property.agentPhone}
             </a>
           </div>
         </div>
@@ -46,10 +46,10 @@ export function PropertyDetailsContact({
           <div>
             <p className="text-vista-text/60 text-sm">Email</p>
             <a
-              href={`mailto:${property.contactInfo.email}`}
+              href={`mailto:${property.agentEmail}`}
               className="text-vista-primary hover:text-vista-accent font-semibold transition-colors"
             >
-              {property.contactInfo.email}
+              {property.agentEmail}
             </a>
           </div>
         </div>
