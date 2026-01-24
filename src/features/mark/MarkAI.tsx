@@ -191,7 +191,11 @@ export function MarkAI() {
       });
 
       if (response.data && response.data.reply) {
-        addMessage(response.data.reply, "bot");
+        addMessage(
+          response.data.reply,
+          "bot",
+          response.data.results ? response.data.results : undefined
+        );
       }
     } catch (error) {
       console.error("Chat Error:", error);
@@ -264,10 +268,10 @@ export function MarkAI() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`flex flex-col ${
+                    className={`flex ${
                       message.sender === "user"
                         ? "justify-end"
-                        : "justify-start"
+                        : "flex-col justify-start"
                     }`}
                   >
                     <div

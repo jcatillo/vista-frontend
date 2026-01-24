@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-// Define a minimal Property interface for the card display
+// Define the shape of a single property card
 export interface PropertyCardData {
   propertyId: string;
   name: string;
@@ -13,14 +13,16 @@ export interface PropertyCardData {
   image?: { url: string };
 }
 
+// Define the message structure
 export interface Message {
   id: string;
   text: string;
   sender: "user" | "bot";
   timestamp: Date;
-  properties?: PropertyCardData[]; // <--- ADD THIS
+  properties?: PropertyCardData[]; // <--- THIS MUST BE HERE
 }
 
+// Define the Context Provider structure
 export interface MarkAIContextType {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -29,8 +31,8 @@ export interface MarkAIContextType {
   addMessage: (
     text: string,
     sender: "user" | "bot",
-    properties?: PropertyCardData[]
-  ) => void; // <--- UPDATE THIS
+    properties?: PropertyCardData[] // <--- THIS MUST BE HERE
+  ) => void;
 }
 
 export const MarkAIContext = createContext<MarkAIContextType | undefined>(

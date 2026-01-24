@@ -5,7 +5,7 @@ import {
   type PropertyCardData,
 } from "./MarkAIContext";
 
-// Type Guard
+// Type Guard to validate data structure
 function isMessageArray(data: unknown): data is Message[] {
   return (
     Array.isArray(data) &&
@@ -38,11 +38,17 @@ export function MarkAIProvider({ children }: { children: ReactNode }) {
     try {
       const parsed: unknown = JSON.parse(saved);
       if (isMessageArray(parsed)) {
-        return parsed.map((m) => ({
-          ...m,
-          timestamp: new Date(m.timestamp),
-          properties: m.properties || undefined, // Explicitly restore properties
-        }));
+        // Hydrate data: Convert date strings back to Date objects
+        // AND explicitly preserve the properties array
+        return parsed.map((m) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const rawMessage = m as any;
+          return {
+            ...m,
+            timestamp: new Date(m.timestamp),
+            properties: rawMessage.properties || undefined,
+          };
+        });
       }
     } catch (e) {
       console.error("Failed to parse chat history", e);
@@ -52,7 +58,7 @@ export function MarkAIProvider({ children }: { children: ReactNode }) {
 
   const [isOpen, setIsOpen] = useState(false);
 
-  // Persistence logic
+  // Persistence: Save to localStorage whenever messages change
   useEffect(() => {
     localStorage.setItem("vista_chat_history", JSON.stringify(messages));
   }, [messages]);
@@ -62,18 +68,19 @@ export function MarkAIProvider({ children }: { children: ReactNode }) {
     sender: "user" | "bot",
     properties?: PropertyCardData[]
   ) => {
-    // DEBUG LOG: Check if properties are actually arriving here
-    if (properties) {
-      console.log("Saving Message with Properties:", properties);
-    }
-
     const newMessage: Message = {
       id: Date.now().toString(),
       text,
       sender,
       timestamp: new Date(),
-      properties: properties, // <--- Ensure this is assigned
+      properties: properties, // <--- Ensure this is passed to state
     };
+
+    // Debug log to confirm data flow
+    if (properties && properties.length > 0) {
+      console.log("MarkAIProvider: Saving properties to state:", properties);
+    }
+
     setMessages((prev) => [...prev, newMessage]);
   };
 
