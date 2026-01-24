@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, RotateCcw, Mic } from "lucide-react";
+import { ChevronLeft, RotateCcw, Mic, Menu, X } from "lucide-react";
 import { type Property } from "../types/property";
 import { useState, useEffect } from "react";
 import { PanoramaViewer } from "../components/PanoramaViewer";
@@ -29,6 +29,9 @@ export default function VRViewerPage() {
   const [lastDetection, setLastDetection] = useState<string | null>(null);
   const [voiceStatus, setVoiceStatus] = useState<string>('idle');
   const [navMode, setNavMode] = useState(false);
+  const [inputMode, setInputMode] = useState<'voice' | 'typing' | null>(null);
+  const [typedCommand, setTypedCommand] = useState<string>('');
+  const [showGalleryMenu, setShowGalleryMenu] = useState(false);
   
   // React Speech Recognition hook
   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
@@ -230,6 +233,30 @@ export default function VRViewerPage() {
     };
   }, []);
 
+  // Ensure full screen without scrolling
+  useEffect(() => {
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.width = '100%';
+    document.documentElement.style.height = '100vh';
+    document.documentElement.style.overflow = 'hidden';
+    
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.width = '100%';
+    document.body.style.height = '100vh';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+      document.body.style.position = 'relative';
+      document.body.style.touchAction = 'auto';
+    };
+  }, []);
+
   // Lock to landscape on mobile and detect orientation
   useEffect(() => {
     if (isMobileDevice()) {
@@ -282,6 +309,9 @@ export default function VRViewerPage() {
         ).requestPermission();
         console.log("Permission result:", permission);
         setOrientationPermission(permission);
+        if (permission === 'granted') {
+          setInputMode('voice');
+        }
       } catch (err) {
         console.error("Orientation permission error:", err);
         setOrientationPermission("denied");
@@ -290,6 +320,7 @@ export default function VRViewerPage() {
       // Non-iOS devices (Android) don't need permission
       console.log("Non-iOS device, granting permission automatically");
       setOrientationPermission("granted");
+      setInputMode("voice");
     }
   };
 
@@ -359,7 +390,51 @@ export default function VRViewerPage() {
       {/** Combined voice active state for Porcupine or Web Speech */}
       {/** Decide active state before JSX to reduce duplication */}
 
-      {/* Insecure Context Warning for microphone */}
+      {/* Input Mode Selection - Show on first visit (desktop only) */}
+      {!isMobile && inputMode === null && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-white p-8">
+          <h2 className="text-3xl font-bold mb-4 text-center">Choose Input Method</h2>
+          <p className="text-white/70 text-center mb-8">How would you like to navigate?</p>
+          <div className="flex gap-6">
+            <button
+              onClick={() => setInputMode('voice')}
+              className="px-8 py-4 bg-vista-accent text-black rounded-lg font-semibold hover:bg-vista-accent/80 transition-colors"
+            >
+              🎤 Voice Commands (Echo)
+            </button>
+            <button
+              onClick={() => setInputMode('typing')}
+              className="px-8 py-4 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-colors"
+            >
+              ⌨️ Type Commands
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Input Mode Toggle - Show voice mode indicator only */}
+      {!isMobile && inputMode === 'voice' && false && (
+        <div className="absolute top-2 right-2 z-30">
+          <button
+            onClick={() => setInputMode('typing')}
+            className="bg-vista-accent text-black px-3 py-1 rounded-full text-xs font-semibold hover:opacity-90"
+          >
+            🎤 Voice
+          </button>
+        </div>
+      )}
+
+      {/* Mobile/Desktop Hamburger Menu Button (All modes) */}
+      {inputMode !== null && (
+        <div className={`absolute ${isMobile ? 'top-2 right-2' : 'top-2 right-2'} z-30`}>
+          <button
+            onClick={() => setShowGalleryMenu(!showGalleryMenu)}
+            className="bg-vista-accent text-black p-2 rounded-lg hover:opacity-90"
+          >
+            {showGalleryMenu ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      )}
       {typeof window !== 'undefined' && (!isMobile || (orientationPermission === 'granted' && !isPortrait)) && browserSupportsSpeechRecognition && !voiceActive && !(window.isSecureContext || window.location.hostname === 'localhost') && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-amber-600/90 text-white rounded-full px-4 py-2 text-sm shadow">
           Microphone requires HTTPS or localhost
@@ -392,7 +467,10 @@ export default function VRViewerPage() {
             Enable Motion Controls
           </button>
           <button
-            onClick={() => setOrientationPermission('denied')}
+            onClick={() => {
+              setOrientationPermission('denied');
+              setInputMode('typing');
+            }}
             className="mt-4 text-white/50 hover:text-white/70 transition-colors"
           >
             Skip (use touch instead)
@@ -400,21 +478,71 @@ export default function VRViewerPage() {
         </div>
       )}
 
-      {/* Voice Command Indicator */}
-      {voiceActive && (
+      {/* Voice Command Indicator - Only show in voice mode */}
+      {voiceActive && inputMode === 'voice' && (
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-2">
           <Mic size={12} className={`text-vista-accent ${voiceCommandActive ? 'animate-pulse' : ''}`} />
           <span className="text-white text-xs">Voice commands active</span>
         </div>
       )}
 
-      {/* Live Captions - Only show when navMode is active or detected "hey echo" */}
-      {voiceActive && liveTranscript && (
+      {/* Live Captions - Only show in voice mode */}
+      {voiceActive && inputMode === 'voice' && liveTranscript && (
         <div className="absolute bottom-20 left-0 right-0 z-30 flex justify-center px-2 md:px-4">
           <div className="bg-black/90 backdrop-blur-sm text-white text-sm md:text-base px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl shadow-lg max-w-2xl w-full text-center border border-white/10">
             <span className="font-medium">
               {liveTranscript}
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Typing Input - Show in typing mode */}
+      {inputMode === 'typing' && (
+        <div className="absolute bottom-20 md:bottom-8 left-0 right-0 z-30 flex justify-center px-3 md:px-4">
+          <div className="w-full max-w-lg flex gap-2">
+            <input
+              type="text"
+              value={typedCommand}
+              onChange={(e) => setTypedCommand(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const cmd = typedCommand.toLowerCase().trim();
+                  if (cmd.includes('navigate')) {
+                    setNavMode(true);
+                    setTypedCommand('');
+                  } else if (cmd.includes('exit navigate')) {
+                    setNavMode(false);
+                    setTypedCommand('');
+                  } else {
+                    // Handle number navigation
+                    const num = parseInt(cmd);
+                    if (!isNaN(num) && num >= 1 && num <= panoramicImages.length) {
+                      setCurrentImageIndex(num - 1);
+                      setLastDetection(`navigate to ${num}`);
+                      setTypedCommand('');
+                    }
+                  }
+                }
+              }}
+              placeholder="Say 'navigate' or a number..."
+              className="flex-1 bg-black/80 text-white px-3 py-2 rounded-lg border border-white/20 text-xs md:text-sm focus:outline-none focus:border-vista-accent"
+            />
+            <button
+              onClick={() => {
+                const cmd = typedCommand.toLowerCase().trim();
+                if (cmd.includes('navigate')) {
+                  setNavMode(true);
+                  setTypedCommand('');
+                } else if (cmd.includes('exit navigate')) {
+                  setNavMode(false);
+                  setTypedCommand('');
+                }
+              }}
+              className="bg-vista-accent text-black px-2 md:px-3 py-2 rounded-lg font-semibold hover:opacity-90 text-xs md:text-sm whitespace-nowrap"
+            >
+              Send
+            </button>
           </div>
         </div>
       )}
@@ -451,7 +579,7 @@ export default function VRViewerPage() {
       )}
 
       {/* CTA: Tap to enable voice (requests mic permission and starts listening) */}
-      { browserSupportsSpeechRecognition && !voiceActive && (!isMobile || (orientationPermission === 'granted' && !isPortrait)) && (
+      { browserSupportsSpeechRecognition && inputMode === 'voice' && !voiceActive && (!isMobile || (orientationPermission === 'granted' && !isPortrait)) && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
           <button
             className="bg-vista-accent text-black font-medium rounded-full px-5 py-2 shadow hover:opacity-90 active:opacity-80 cursor-pointer"
@@ -489,7 +617,7 @@ export default function VRViewerPage() {
       )}
 
       {/* Voice debug status */}
-      {browserSupportsSpeechRecognition && (
+      {browserSupportsSpeechRecognition && false && (
         <div className="absolute bottom-6 left-4 z-30 text-xs text-white/70 bg-black/50 px-3 py-2 rounded-md space-y-1">
           <div>Voice: {voiceStatus}</div>
           <div>Listening: {String(voiceActive)}</div>
@@ -533,8 +661,7 @@ export default function VRViewerPage() {
                 {property.name} - VR Experience
               </h1>
               <p className="text-sm text-white/70">
-                {panoramicImages.length} panoramic view
-                {panoramicImages.length !== 1 ? "s" : ""} available
+                {panoramicImages[currentImageIndex].title || "Unlabeled Room"}
               </p>
             </div>
           </div>
@@ -542,10 +669,10 @@ export default function VRViewerPage() {
       </div>
 
       {/* Current Image Label - Upper Right Corner */}
-      {panoramicImages.length > 0 && (
+      {panoramicImages.length > 0 && !inputMode && (
         <div className="absolute top-4 right-4 z-20">
-          <div className="rounded-lg bg-black/70 px-6 py-3 backdrop-blur-sm">
-            <p className="text-xl font-bold text-white">
+          <div className="rounded-lg bg-black/70 px-3 py-1 backdrop-blur-sm">
+            <p className="text-xs md:text-sm font-semibold text-white/80">
               {panoramicImages[currentImageIndex].title || "Unlabeled Room"}
             </p>
           </div>
@@ -553,7 +680,7 @@ export default function VRViewerPage() {
       )}
 
       {/* Panoramic Views List - Bottom Overlay - Auto-hide */}
-      {panoramicImages.length > 1 && (
+      {panoramicImages.length > 1 && !inputMode && (
         <div
           className={`absolute bottom-12 md:bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/90 to-transparent p-2 md:p-6 transition-opacity duration-300 ${
             showUI ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -587,6 +714,39 @@ export default function VRViewerPage() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Gallery Menu - Hamburger (All modes) */}
+      {inputMode !== null && panoramicImages.length > 1 && showGalleryMenu && (
+        <div className={`absolute ${isMobile ? 'top-14 right-2' : 'top-14 right-2'} z-30 bg-[#0f172a]/95 border border-white/10 rounded-xl shadow-2xl max-h-96 overflow-y-auto w-64`}>
+          <div className="p-3 border-b border-white/10">
+            <h3 className="text-white font-semibold text-sm">Panoramic Views</h3>
+          </div>
+          <div className="p-2 space-y-1">
+            {panoramicImages.map((image, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setCurrentImageIndex(idx);
+                  setShowGalleryMenu(false);
+                }}
+                className="w-full text-left flex gap-3 items-center p-2 hover:bg-white/10 rounded-lg transition-colors group"
+              >
+                <div className="w-12 h-10 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                  <img
+                    src={image.url}
+                    alt={image.title || `View ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-sm font-medium truncate">{image.title || `View ${idx + 1}`}</div>
+                  <div className="text-white/50 text-xs">Say or type "{idx + 1}"</div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       )}
