@@ -26,7 +26,7 @@ export function ThumbnailStep({ formData, onSelectThumbnail }: StepProps) {
         </p>
         {formData.regularImages.length > 0 ? (
           <div className="grid grid-cols-4 gap-3">
-            {formData.regularImages.map((file, idx) => (
+            {formData.regularImages.map((imageObj, idx) => (
               <div key={idx} className="group relative">
                 <button
                   type="button"
@@ -38,7 +38,7 @@ export function ThumbnailStep({ formData, onSelectThumbnail }: StepProps) {
                   }`}
                 >
                   <img
-                    src={URL.createObjectURL(file)}
+                    src={URL.createObjectURL(imageObj.file)}
                     alt=""
                     className="h-full w-full rounded-lg object-cover"
                   />
@@ -48,6 +48,11 @@ export function ThumbnailStep({ formData, onSelectThumbnail }: StepProps) {
                     </div>
                   )}
                 </button>
+                {imageObj.label && (
+                  <p className="mt-1 text-center text-xs text-gray-600">
+                    {imageObj.label}
+                  </p>
+                )}
               </div>
             ))}
           </div>

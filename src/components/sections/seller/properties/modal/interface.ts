@@ -1,3 +1,25 @@
+export const ROOM_TYPES = [
+  "Living Room",
+  "Kitchen",
+  "Master Bedroom",
+  "Bedroom",
+  "Bathroom",
+  "Dining Room",
+  "Home Office",
+  "Balcony/Terrace",
+  "Garden/Yard",
+  "Garage",
+  "Hallway",
+  "Staircase",
+  "Basement",
+  "Attic",
+  "Laundry Room",
+  "Storage Room",
+  "Other",
+] as const;
+
+export type RoomType = (typeof ROOM_TYPES)[number];
+
 export interface PropertyFormData {
   name: string;
   propertyType: "House" | "Condo" | "Apartment" | "Lot" | "Commercial" | "";
@@ -7,8 +29,8 @@ export interface PropertyFormData {
   longitude: string;
   price: string;
   priceNegotiable: boolean;
-  regularImages: File[];
-  panoramicImages: File[];
+  regularImages: Array<{ file: File; label: RoomType | "" }>;
+  panoramicImages: Array<{ file: File; label: RoomType | "" }>;
   selectedThumbnailIndex: number | null; // Index of selected thumbnail from regularImages
   bedrooms: string;
   bathrooms: string;
@@ -70,6 +92,11 @@ export interface StepProps {
   onRemoveImage: (
     field: "regularImages" | "panoramicImages",
     index: number
+  ) => void;
+  onUpdateImageLabel: (
+    field: "regularImages" | "panoramicImages",
+    index: number,
+    label: string
   ) => void;
   onSelectThumbnail: (index: number | null) => void;
   validationErrors: Record<string, string>;

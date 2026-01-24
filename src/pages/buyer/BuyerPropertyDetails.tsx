@@ -16,6 +16,7 @@ import {
   ChevronRight,
   X,
   Maximize2,
+  RotateCcw,
   School,
   ShoppingBag,
   Star,
@@ -23,10 +24,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import type {
-  Property,
-  PropertyImage,
+  PropertyDetailsPayload,
+  PropertyImagePayload,
 } from "../../features/buyer/types/property.types";
-import allProperties from "../../data/marketplaceProperties";
+import { getPropertyDetails } from "../../services/propertyService";
 // Image Gallery Modal
 function ImageGalleryModal({
   images,
@@ -34,7 +35,7 @@ function ImageGalleryModal({
   onClose,
   onNavigate,
 }: {
-  images: PropertyImage[];
+  images: PropertyImagePayload[];
   currentIndex: number;
   onClose: () => void;
   onNavigate: (index: number) => void;
@@ -118,18 +119,17 @@ function PropertyImageGallery({
   property,
   onImageExpanded,
 }: {
-  property: Property;
+  property: PropertyDetailsPayload;
   onImageExpanded: (expanded: boolean, imageIndex: number) => void;
 }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const allImages: PropertyImage[] =
-    property.images && property.images.length > 0
-      ? property.images
-      : property.image
-        ? [property.image]
-        : [];
+  const allImages: PropertyImagePayload[] = property.images;
   const images = allImages.filter((img) => img.imageType === "regular");
+  const panoramicImages = allImages.filter(
+    (img) => img.imageType === "panoramic"
+  );
+  const navigate = useNavigate();
   const goToPrevious = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
@@ -146,7 +146,7 @@ function PropertyImageGallery({
   return (
     <div className="relative overflow-hidden rounded-2xl">
       {/* Main Image */}
-      <div className="bg-vista-bg relative aspect-16/10 w-full overflow-hidden">
+      <div className="bg-vista-bg relative h-[600px] w-full overflow-hidden">
         <motion.img
           key={currentImageIndex}
           initial={{
@@ -221,22 +221,51 @@ function PropertyImageGallery({
         </div>
       </div>
 
-      {/* Thumbnail Strip */}
-      {images.length > 1 && (
-        <div className="scrollbar-thin scrollbar-thumb-vista-accent/20 scrollbar-track-transparent mt-3 flex gap-2 overflow-x-auto pb-1">
-          {images.map((img, idx) => (
+      {/* Panoramic Thumbnails + VR Button */}
+      {panoramicImages.length > 0 && (
+        <div className="mt-6">
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-vista-primary text-sm font-medium">
+              Panoramic Views
+            </h3>
             <button
-              key={img.id || idx}
-              onClick={() => setCurrentImageIndex(idx)}
-              className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg transition-all ${idx === currentImageIndex ? "ring-vista-accent ring-2 ring-offset-2" : "opacity-50 hover:opacity-80"}`}
+              onClick={() =>
+                navigate(`/vr-viewer/${property.propertyId}`, {
+                  state: { property, startIndex: 0 },
+                })
+              }
+              className="text-vista-accent hover:text-vista-primary text-sm"
             >
-              <img
-                src={img.url}
-                alt={`Thumbnail ${idx + 1}`}
-                className="h-full w-full object-cover"
-              />
+              Open VR
             </button>
-          ))}
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {panoramicImages.map((img, idx) => (
+              <button
+                key={img.id || idx}
+                onClick={() =>
+                  navigate(`/vr-viewer/${property.propertyId}`, {
+                    state: { property, startIndex: idx },
+                  })
+                }
+                className="group hover:border-vista-accent relative shrink-0 overflow-hidden rounded-lg border-2 border-white/20 transition-all"
+              >
+                <div className="h-40 w-40 overflow-hidden">
+                  <img
+                    src={img.url}
+                    alt={img.id || `Panorama ${idx + 1}`}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  />
+                </div>
+                <div className="absolute inset-0 flex items-end justify-center bg-black/0 pb-1 transition-colors group-hover:bg-black/40">
+                  <p className="px-1 text-center text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {img.id || `View ${idx + 1}`}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -245,28 +274,34 @@ function PropertyImageGallery({
 export default function BuyerPropertyDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [property, setProperty] = useState<PropertyDetailsPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const [expandedImageIndex, setExpandedImageIndex] = useState(0);
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchProperty = async () => {
-      setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const foundProperty = allProperties.find((p) => p.propertyId === id);
-      setProperty(foundProperty || null);
-      setLoading(false);
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getPropertyDetails(id);
+        setProperty(response.property);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load property"
+        );
+        console.error("Error loading property:", err);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProperty();
   }, [id]);
-  const allImages: PropertyImage[] = property
-    ? property.images && property.images.length > 0
-      ? property.images.filter((img) => img.imageType === "regular")
-      : property.image
-        ? [property.image]
-        : []
-    : [];
+
+  const allImages: PropertyImagePayload[] = property?.images || [];
   if (loading) {
     return (
       <div className="bg-vista-bg flex min-h-screen items-center justify-center">
@@ -289,6 +324,36 @@ export default function BuyerPropertyDetails() {
       </div>
     );
   }
+
+  if (error) {
+    return (
+      <div className="bg-vista-bg flex min-h-screen items-center justify-center">
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          className="text-center"
+        >
+          <h1 className="text-vista-primary mb-2 text-2xl font-semibold">
+            Error Loading Property
+          </h1>
+          <p className="text-vista-text/50 mb-6 text-sm">{error}</p>
+          <button
+            onClick={() => navigate("/buyer/marketplace")}
+            className="text-vista-accent hover:text-vista-primary text-sm font-medium transition-colors"
+          >
+            ← Back to Marketplace
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!property) {
     return (
       <div className="bg-vista-bg flex min-h-screen items-center justify-center">
@@ -377,14 +442,6 @@ export default function BuyerPropertyDetails() {
 
               <h1 className="text-vista-primary text-3xl leading-tight font-bold tracking-tight md:text-4xl">
                 {property.name}
-                {property.status && (
-                  <>
-                    <span className="flex items-center gap-1 text-sm text-green-600 capitalize">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      {property.status}
-                    </span>
-                  </>
-                )}
               </h1>
 
               <div className="text-vista-text/60 flex items-center gap-1.5">

@@ -7,6 +7,7 @@ import type { AddPropertyModalProps, PropertyFormData } from "./interface";
 import { BasicInfo } from "./Basicinfo";
 import { PropertyDetails } from "./PropertyDetails";
 import { ImageStep } from "./ImageStep";
+import { RoomLabelStep } from "./RoomLabelStep";
 import { ThumbnailStep } from "./ThumbnailStep";
 import { PropertyFeaturesForm } from "./DetailsAndPricing";
 import { LocationNearby } from "./LocationNearby";
@@ -20,14 +21,15 @@ const STEPS = [
   { id: 1, title: "Basic Information", component: BasicInfo },
   { id: 2, title: "Property Details", component: PropertyDetails },
   { id: 3, title: "Property Images", component: ImageStep },
-  { id: 4, title: "Description & Features", component: PropertyFeaturesForm },
-  { id: 5, title: "Location & Nearby", component: LocationNearby },
-  { id: 6, title: "Legal & Financial", component: LegalFinancial },
-  { id: 7, title: "Availability & Policies", component: AvailabilityPolicies },
-  { id: 8, title: "Agent Information", component: AgentInformationForm },
-  { id: 9, title: "Developer Information", component: DeveloperInformation },
-  { id: 10, title: "Terms & Policies", component: TermsAndPolicies },
-  { id: 11, title: "Select Thumbnail", component: ThumbnailStep },
+  { id: 4, title: "Label Room Types", component: RoomLabelStep },
+  { id: 5, title: "Select Thumbnail", component: ThumbnailStep },
+  { id: 6, title: "Description & Features", component: PropertyFeaturesForm },
+  { id: 7, title: "Location & Nearby", component: LocationNearby },
+  { id: 8, title: "Legal & Financial", component: LegalFinancial },
+  { id: 9, title: "Availability & Policies", component: AvailabilityPolicies },
+  { id: 10, title: "Agent Information", component: AgentInformationForm },
+  { id: 11, title: "Developer Information", component: DeveloperInformation },
+  { id: 12, title: "Terms & Policies", component: TermsAndPolicies },
 ];
 
 export default function AddPropertyModal({
@@ -79,22 +81,39 @@ export default function AddPropertyModal({
           errors.regularImages = "At least one property image is required";
         break;
 
-      case 4: // Description & Features
+      case 4: // Label Room Types
+        const unlabeledRegular = currentData.regularImages.filter(
+          (img: { file: File; label: string }) => !img.label
+        );
+        const unlabeledPanoramic = currentData.panoramicImages.filter(
+          (img: { file: File; label: string }) => !img.label
+        );
+        if (unlabeledRegular.length > 0 || unlabeledPanoramic.length > 0) {
+          errors.roomLabels = "Please assign room types to all uploaded images";
+        }
+        break;
+
+      case 5: // Select Thumbnail
+        if (currentData.selectedThumbnailIndex === null)
+          errors.selectedThumbnailIndex = "Please select a main thumbnail";
+        break;
+
+      case 6: // Description & Features
         if (!currentData.description.trim())
           errors.description = "Property description is required";
         break;
 
-      case 5: // Location & Nearby
+      case 7: // Location & Nearby
         if (!currentData.address.trim())
           errors.address = "Property address is required";
         break;
 
-      case 6: // Legal & Financial
+      case 8: // Legal & Financial
         if (!currentData.ownershipStatus.trim())
           errors.ownershipStatus = "Ownership status is required";
         break;
 
-      case 8: // Agent Information
+      case 10: // Agent Information
         if (!currentData.agentName.trim())
           errors.agentName = "Agent name is required";
         if (!currentData.agentPhone.trim())
@@ -103,7 +122,7 @@ export default function AddPropertyModal({
           errors.agentEmail = "Agent email is required";
         break;
 
-      case 9: // Developer Information (only if hasDeveloper is true)
+      case 11: // Developer Information (only if hasDeveloper is true)
         if (currentData.hasDeveloper) {
           if (!currentData.developerName.trim())
             errors.developerName = "Developer name is required";
@@ -114,14 +133,9 @@ export default function AddPropertyModal({
         }
         break;
 
-      case 10: // Terms & Policies
+      case 12: // Terms & Policies
         if (currentData.terms.length === 0)
           errors.terms = "At least one term must be selected";
-        break;
-
-      case 11: // Select Thumbnail
-        if (currentData.selectedThumbnailIndex === null)
-          errors.selectedThumbnailIndex = "Please select a main thumbnail";
         break;
     }
 
@@ -154,23 +168,35 @@ export default function AddPropertyModal({
       case 3: // Property Images
         return currentData.regularImages.length > 0;
 
-      case 4: // Description & Features
+      case 4: // Label Room Types
+        const hasUnlabeledRegular = currentData.regularImages.some(
+          (img: { file: File; label: string }) => !img.label
+        );
+        const hasUnlabeledPanoramic = currentData.panoramicImages.some(
+          (img: { file: File; label: string }) => !img.label
+        );
+        return !hasUnlabeledRegular && !hasUnlabeledPanoramic;
+
+      case 5: // Select Thumbnail
+        return currentData.selectedThumbnailIndex !== null;
+
+      case 6: // Description & Features
         return !!currentData.description.trim();
 
-      case 5: // Location & Nearby
+      case 7: // Location & Nearby
         return !!currentData.address.trim();
 
-      case 6: // Legal & Financial
+      case 8: // Legal & Financial
         return !!currentData.ownershipStatus.trim();
 
-      case 8: // Agent Information
+      case 10: // Agent Information
         return !!(
           currentData.agentName.trim() &&
           currentData.agentPhone.trim() &&
           currentData.agentEmail.trim()
         );
 
-      case 9: // Developer Information (only if hasDeveloper is true)
+      case 11: // Developer Information (only if hasDeveloper is true)
         if (currentData.hasDeveloper) {
           return !!(
             currentData.developerName.trim() &&
@@ -180,11 +206,8 @@ export default function AddPropertyModal({
         }
         return true; // If no developer, step is complete
 
-      case 10: // Terms & Policies
+      case 12: // Terms & Policies
         return currentData.terms.length > 0;
-
-      case 11: // Select Thumbnail
-        return currentData.selectedThumbnailIndex !== null;
 
       default:
         return true;
@@ -280,7 +303,10 @@ export default function AddPropertyModal({
     files: FileList | null
   ) => {
     if (files) {
-      const fileArray = Array.from(files);
+      const fileArray = Array.from(files).map((file) => ({
+        file,
+        label: "",
+      }));
       setFormData((prev) => ({
         ...prev,
         [field]: [...prev[field], ...fileArray],
@@ -294,7 +320,33 @@ export default function AddPropertyModal({
   ) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: (prev[field] as File[]).filter((_, i) => i !== index),
+      [field]: (prev[field] as Array<{ file: File; label: string }>).filter(
+        (_, i) => i !== index
+      ),
+    }));
+    // Adjust selected thumbnail index if necessary
+    if (field === "regularImages" && formData.selectedThumbnailIndex !== null) {
+      if (formData.selectedThumbnailIndex === index) {
+        setFormData((prev) => ({ ...prev, selectedThumbnailIndex: null }));
+      } else if (formData.selectedThumbnailIndex > index) {
+        setFormData((prev) => ({
+          ...prev,
+          selectedThumbnailIndex: prev.selectedThumbnailIndex! - 1,
+        }));
+      }
+    }
+  };
+
+  const handleUpdateImageLabel = (
+    field: "regularImages" | "panoramicImages",
+    index: number,
+    label: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: (prev[field] as Array<{ file: File; label: string }>).map(
+        (item, i) => (i === index ? { ...item, label } : item)
+      ),
     }));
   };
 
@@ -478,6 +530,7 @@ export default function AddPropertyModal({
                   onArrayToggle={handleArrayToggle}
                   onFileUpload={handleFileUpload}
                   onRemoveImage={handleRemoveImage}
+                  onUpdateImageLabel={handleUpdateImageLabel}
                   onSelectThumbnail={handleSelectThumbnail}
                   validationErrors={validationErrors}
                 />

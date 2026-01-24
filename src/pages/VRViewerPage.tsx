@@ -17,7 +17,9 @@ export default function VRViewerPage() {
   const [uiTimeout, setUiTimeout] = useState<ReturnType<
     typeof setTimeout
   > | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const initialIndex = (location.state as any)?.startIndex ?? 0;
+  const [currentImageIndex, setCurrentImageIndex] =
+    useState<number>(initialIndex);
   const [isPortrait, setIsPortrait] = useState(false);
   const [orientationPermission, setOrientationPermission] = useState<
     "granted" | "denied" | "prompt"

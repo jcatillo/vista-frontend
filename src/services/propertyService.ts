@@ -3,6 +3,15 @@ import type {
   PropertyFormInput,
   SellerPropertiesResponse,
 } from "../types/property";
+import type {
+  PropertyCardsQuery,
+  PropertyCardsResponse,
+  PropertyDetailsResponse,
+  PropertySearchRequest,
+  PropertySearchResponse,
+  BuyerPropertiesViewQuery,
+  BuyerPropertiesViewResponse,
+} from "../features/buyer/types/property.types";
 import { env } from "../utils/env";
 
 const { BASE_URL } = env;
@@ -29,17 +38,37 @@ function createFormData(data: Partial<PropertyFormInput>): FormData {
   const formData = new FormData();
 
   Object.entries(data).forEach(([key, value]) => {
-    // 1. Handle Files
+    // 1. Handle Images with Labels
     // We append multiple values to the same key 'regularImages' (without brackets)
-    if (key === "regularImages" && Array.isArray(value)) {
-      (value as File[]).forEach((file) =>
-        formData.append("regularImages", file)
+    if (
+      key === "regularImages" &&
+      Array.isArray(value) &&
+      value.length > 0 &&
+      typeof value[0] === "object" &&
+      value[0] !== null &&
+      "file" in value[0]
+    ) {
+      (value as unknown as Array<{ file: File; label: string }>).forEach(
+        (imageObj) => {
+          formData.append("regularImages", imageObj.file);
+          formData.append(`regularImages_labels`, imageObj.label);
+        }
       );
       return;
     }
-    if (key === "panoramicImages" && Array.isArray(value)) {
-      (value as File[]).forEach((file) =>
-        formData.append("panoramicImages", file)
+    if (
+      key === "panoramicImages" &&
+      Array.isArray(value) &&
+      value.length > 0 &&
+      typeof value[0] === "object" &&
+      value[0] !== null &&
+      "file" in value[0]
+    ) {
+      (value as unknown as Array<{ file: File; label: string }>).forEach(
+        (imageObj) => {
+          formData.append("panoramicImages", imageObj.file);
+          formData.append(`panoramicImages_labels`, imageObj.label);
+        }
       );
       return;
     }
@@ -95,7 +124,6 @@ export async function createProperty(
   const formData = createFormData(data);
 
   console.log("FormData entries:");
-
 
   // Hardcode user_id or retrieve from your Auth Context if needed
   // formData.append('user_id', 'CURRENT_USER_ID');
@@ -160,6 +188,143 @@ export async function getSellerProperties(): Promise<SellerPropertiesResponse> {
     throw new Error(
       responseData.error?.message || "Failed to get seller properties"
     );
+  }
+
+  return responseData;
+}
+
+// ============================================================================
+// BUYER API FUNCTIONS - Lightweight payloads for optimized performance
+// ============================================================================
+
+/**
+ * Get property cards for marketplace listings with pagination and filtering
+ */
+export async function getPropertyCards(
+  filters?: PropertyCardsQuery
+): Promise<PropertyCardsResponse> {
+  const params = new URLSearchParams();
+
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value.toString());
+      }
+    });
+  }
+
+  const url = `${BASE_URL}/buyer/properties${params.toString() ? `?${params}` : ''}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch property cards: ${response.statusText}`);
+  }
+
+  const responseData: PropertyCardsResponse = await response.json();
+
+  if (!responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to get property cards");
+  }
+
+  return responseData;
+}
+
+/**
+ * Get detailed property information for property details view
+ */
+export async function getPropertyDetails(
+  propertyId: string
+): Promise<PropertyDetailsResponse> {
+  const url = `${BASE_URL}/buyer/${propertyId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch property details: ${response.statusText}`);
+  }
+
+  const responseData: PropertyDetailsResponse = await response.json();
+
+  if (!responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to get property details");
+  }
+
+  return responseData;
+}
+
+/**
+ * Advanced property search with filter payload
+ */
+export async function searchProperties(
+  filters: PropertySearchRequest
+): Promise<PropertySearchResponse> {
+  const url = `${BASE_URL}/api/buyer/properties/search`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(filters),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to search properties: ${response.statusText}`);
+  }
+
+  const responseData: PropertySearchResponse = await response.json();
+
+  if (!responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to search properties");
+  }
+
+  return responseData;
+}
+
+/**
+ * Get buyer properties view for marketplace/dashboard
+ */
+export async function getBuyerPropertiesView(
+  filters?: BuyerPropertiesViewQuery
+): Promise<BuyerPropertiesViewResponse> {
+  const params = new URLSearchParams();
+
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, value.toString());
+      }
+    });
+  }
+
+  const url = `${BASE_URL}/buyer/properties-view${params.toString() ? `?${params}` : ''}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch buyer properties view: ${response.statusText}`);
+  }
+
+  const responseData: BuyerPropertiesViewResponse = await response.json();
+
+  if (!responseData.success) {
+    throw new Error(responseData.error?.message || "Failed to get buyer properties view");
   }
 
   return responseData;
