@@ -388,16 +388,16 @@ export default function VRViewerPage() {
 
       {/* Voice Command Indicator */}
       {voiceActive && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 backdrop-blur-sm rounded-full px-4 py-2 flex items-center gap-2">
-          <Mic size={16} className={`text-vista-accent ${voiceCommandActive ? 'animate-pulse' : ''}`} />
-          <span className="text-white text-sm">Voice commands active</span>
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-2">
+          <Mic size={12} className={`text-vista-accent ${voiceCommandActive ? 'animate-pulse' : ''}`} />
+          <span className="text-white text-xs">Voice commands active</span>
         </div>
       )}
 
       {/* Live Captions - Only show when navMode is active or detected "hey echo" */}
       {voiceActive && liveTranscript && (
-        <div className="absolute bottom-20 left-0 right-0 z-30 flex justify-center px-4">
-          <div className="bg-black/90 backdrop-blur-sm text-white text-lg px-6 py-3 rounded-xl shadow-lg max-w-3xl w-full text-center border border-white/10">
+        <div className="absolute bottom-20 left-0 right-0 z-30 flex justify-center px-2 md:px-4">
+          <div className="bg-black/90 backdrop-blur-sm text-white text-sm md:text-base px-3 md:px-4 py-2 md:py-3 rounded-lg md:rounded-xl shadow-lg max-w-2xl w-full text-center border border-white/10">
             <span className="font-medium">
               {liveTranscript}
             </span>
@@ -530,15 +530,15 @@ export default function VRViewerPage() {
       {/* Panoramic Views List - Bottom Overlay - Auto-hide */}
       {panoramicImages.length > 1 && (
         <div
-          className={`absolute bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/90 to-transparent p-6 transition-opacity duration-300 ${
+          className={`absolute bottom-12 md:bottom-0 left-0 right-0 z-20 bg-linear-to-t from-black/90 to-transparent p-2 md:p-6 transition-opacity duration-300 ${
             showUI ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-white text-lg font-bold mb-4">
+          <div className="max-w-7xl mx-auto px-1">
+            <h2 className="text-white text-sm md:text-lg font-bold mb-2 md:mb-4">
               Other Panoramic Views
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="flex gap-1 md:gap-2 overflow-x-auto pb-2">
               {panoramicImages.map((image, index) => (
                 <button
                   key={index}
@@ -547,7 +547,7 @@ export default function VRViewerPage() {
                   }}
                   className="group relative rounded-lg overflow-hidden border-2 border-white/20 hover:border-vista-accent transition-all shrink-0"
                 >
-                  <div className="w-24 h-24 overflow-hidden">
+                  <div className="w-12 h-12 md:w-24 md:h-24 overflow-hidden">
                     <img
                       src={image.url}
                       alt={image.title || `Panoramic View ${index + 1}`}
