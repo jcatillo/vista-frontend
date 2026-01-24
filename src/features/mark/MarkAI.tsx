@@ -1,7 +1,141 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, MessageCircle } from "lucide-react";
+import axios from "axios";
 import { useMarkAI } from "../../hooks/useMarkAI";
+import env from "../../utils/env";
+
+// Parse markdown-like formatting in messages
+function parseMessageContent(text: string): React.ReactNode[] {
+  // First, split by newlines (handle both \n and actual newlines)
+  const lines = text.split(/\\n|\n/);
+
+  const parseInlineFormatting = (
+    line: string,
+    lineIndex: number
+  ): React.ReactNode[] => {
+    const result: React.ReactNode[] = [];
+    // Regex to match **bold**, *italic*, `code`, and plain text
+    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+    let lastIndex = 0;
+    let match;
+    let keyIndex = 0;
+
+    while ((match = regex.exec(line)) !== null) {
+      // Add text before the match
+      if (match.index > lastIndex) {
+        result.push(line.slice(lastIndex, match.index));
+      }
+
+      if (match[2]) {
+        // **bold**
+        result.push(
+          <strong key={`${lineIndex}-${keyIndex++}`}>{match[2]}</strong>
+        );
+      } else if (match[3]) {
+        // *italic*
+        result.push(<em key={`${lineIndex}-${keyIndex++}`}>{match[3]}</em>);
+      } else if (match[4]) {
+        // `code`
+        result.push(
+          <code
+            key={`${lineIndex}-${keyIndex++}`}
+            className="rounded bg-gray-200 px-1 py-0.5 font-mono text-xs"
+          >
+            {match[4]}
+          </code>
+        );
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < line.length) {
+      result.push(line.slice(lastIndex));
+    }
+
+    return result.length > 0 ? result : [line];
+  };
+
+  // Group consecutive list items together
+  const elements: React.ReactNode[] = [];
+  let currentList: { type: "ul" | "ol"; items: React.ReactNode[] } | null =
+    null;
+
+  // Helper to close and push the current list
+  const closeCurrentList = (keyIndex: number | string) => {
+    if (!currentList) return;
+    const { type, items } = currentList;
+    if (type === "ul") {
+      elements.push(
+        <ul key={`ul-${keyIndex}`} className="my-1 ml-4 list-disc space-y-0.5">
+          {items}
+        </ul>
+      );
+    } else {
+      elements.push(
+        <ol
+          key={`ol-${keyIndex}`}
+          className="my-1 ml-4 list-decimal space-y-0.5"
+        >
+          {items}
+        </ol>
+      );
+    }
+    currentList = null;
+  };
+
+  lines.forEach((line, index) => {
+    const trimmedLine = line.trim();
+
+    // Check for numbered list: 1. item, 2. item, etc.
+    const numberedMatch = trimmedLine.match(/^(\d+)\.\s+(.+)$/);
+    // Check for bullet list: - item or * item (at start of line)
+    const bulletMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
+
+    if (numberedMatch) {
+      const content = parseInlineFormatting(numberedMatch[2], index);
+      if (currentList?.type === "ol") {
+        currentList.items.push(<li key={`li-${index}`}>{content}</li>);
+      } else {
+        closeCurrentList(index);
+        currentList = {
+          type: "ol",
+          items: [<li key={`li-${index}`}>{content}</li>],
+        };
+      }
+    } else if (bulletMatch) {
+      const content = parseInlineFormatting(bulletMatch[1], index);
+      if (currentList?.type === "ul") {
+        currentList.items.push(<li key={`li-${index}`}>{content}</li>);
+      } else {
+        closeCurrentList(index);
+        currentList = {
+          type: "ul",
+          items: [<li key={`li-${index}`}>{content}</li>],
+        };
+      }
+    } else {
+      // Not a list item - close any open list
+      closeCurrentList(index);
+
+      // Add regular line with inline formatting
+      const parsedLine = parseInlineFormatting(line, index);
+      elements.push(...parsedLine);
+
+      // Add line break after each line except the last (and not after lists)
+      if (index < lines.length - 1) {
+        elements.push(<br key={`br-${index}`} />);
+      }
+    }
+  });
+
+  // Close any remaining open list
+  closeCurrentList("final");
+
+  return elements;
+}
 
 export function MarkAI() {
   const { messages, isOpen, setIsOpen, addMessage } = useMarkAI();
@@ -9,25 +143,67 @@ export function MarkAI() {
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() === "") return;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-    // Add user message
-    addMessage(inputValue, "user");
+  // Auto-scroll to bottom when messages change or typing state updates
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  /* // Function commentedfor now
+  const handleClearHistory = () => {
+    if (window.confirm("Are you sure you want to clear your chat history?")) {
+      localStorage.removeItem("vista_chat_history");
+      // import this from useMarkAI
+      setMessages([
+        {
+          id: "1",
+          text: "Hi! I'm Mark AI. How can I help you find your perfect property today?",
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  };
+  */
+
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === "" || isTyping) return;
+
+    const userText = inputValue;
+    addMessage(userText, "user");
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    // Format history for Gemini API (Mapping "bot" to "model")
+    const formattedHistory = messages.slice(-20).map((msg) => ({
+      role: msg.sender === "user" ? "user" : "model",
+      parts: [{ text: msg.text }],
+    }));
+
+    try {
+      const response = await axios.post(`${env.BASE_URL}/mark/chat`, {
+        message: userText,
+        history: formattedHistory,
+      });
+
+      if (response.data && response.data.reply) {
+        addMessage(response.data.reply, "bot");
+      }
+    } catch (error) {
+      console.error("Chat Error:", error);
       addMessage(
-        "Thanks for your message! I'm here to help you find properties that match your needs. What are you looking for?",
+        "I'm having trouble reaching the server. Please check your connection.",
         "bot"
       );
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -46,7 +222,7 @@ export function MarkAI() {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="fixed inset-0 z-40 m-0 flex h-screen w-screen flex-col overflow-hidden rounded-none border-0 bg-white shadow-none sm:static sm:mb-4 sm:h-auto sm:w-96 sm:rounded-2xl sm:border sm:border-gray-200 sm:shadow-2xl"
           >
-            {/* Header */}
+            {/* Header - Reverted to Original Design */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -74,6 +250,7 @@ export function MarkAI() {
 
             {/* Messages Container */}
             <motion.div
+              ref={scrollRef}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
@@ -99,7 +276,14 @@ export function MarkAI() {
                           : "rounded-bl-none bg-white text-gray-900 shadow-sm"
                       }`}
                     >
-                      {message.text}
+                      {message.sender === "bot"
+                        ? parseMessageContent(message.text)
+                        : message.text.split("\n").map((line, i, arr) => (
+                            <span key={i}>
+                              {line}
+                              {i < arr.length - 1 && <br />}
+                            </span>
+                          ))}
                     </div>
                   </motion.div>
                 ))}
@@ -139,13 +323,20 @@ export function MarkAI() {
               transition={{ delay: 0.2 }}
               className="flex gap-2 border-t border-gray-200 bg-white px-3 py-2 sm:px-4 sm:py-3"
             >
-              <input
-                type="text"
+              <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="focus:border-vista-primary focus:ring-vista-primary/20 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors outline-none focus:bg-white focus:ring-1"
+                onKeyDown={handleKeyPress}
+                placeholder="Send message..."
+                rows={1}
+                className="focus:border-vista-primary focus:ring-vista-primary/20 max-h-24 min-h-9 flex-1 resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors outline-none focus:bg-white focus:ring-1"
+                style={{ height: "auto", overflow: "hidden" }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height =
+                    Math.min(target.scrollHeight, 96) + "px";
+                }}
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -161,7 +352,7 @@ export function MarkAI() {
         )}
       </AnimatePresence>
 
-      {/* Floating Button */}
+      {/* Floating Button - Reverted to Original Color */}
       <motion.div
         className="relative flex items-end justify-end"
         onMouseEnter={() => setIsHovered(true)}
@@ -202,7 +393,6 @@ export function MarkAI() {
           </AnimatePresence>
         </motion.button>
 
-        {/* Hover Tooltip - Hidden on mobile */}
         <AnimatePresence>
           {!isOpen && isHovered && (
             <motion.div
