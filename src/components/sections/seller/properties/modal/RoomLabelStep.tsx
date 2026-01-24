@@ -1,13 +1,8 @@
-import { Image, Upload, X } from "lucide-react";
+import { Image } from "lucide-react";
 import type { StepProps, RoomType } from "./interface";
 import { motion } from "framer-motion";
 
-export function ImageStep({
-  formData,
-  onFileUpload,
-  onRemoveImage,
-  onUpdateImageLabel,
-}: StepProps) {
+export function RoomLabelStep({ formData, onUpdateImageLabel }: StepProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -17,70 +12,42 @@ export function ImageStep({
       <div className="mb-4 flex items-center gap-2">
         <Image className="text-vista-accent h-5 w-5" />
         <h3 className="text-vista-primary text-lg font-semibold">
-          Property Images
+          Label Room Types
         </h3>
       </div>
 
-      {/* Regular Images */}
       <div>
-        <label className="text-vista-text mb-3 block text-sm font-medium">
-          Regular Images *
-        </label>
-        <div className="border-vista-surface/40 hover:border-vista-accent cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors">
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) => onFileUpload("regularImages", e.target.files, "")}
-            className="hidden"
-            id="regular-upload"
-          />
-          <label htmlFor="regular-upload" className="cursor-pointer">
-            <Upload className="text-vista-text/40 mx-auto mb-3 h-12 w-12" />
-            <p className="text-vista-text/70 text-sm">
-              Click to upload or drag and drop
-            </p>
-            <p className="text-vista-text/50 mt-1 text-xs">
-              PNG, JPG up to 10MB
-            </p>
-          </label>
-        </div>
+        <p className="text-vista-text/60 mb-4 text-sm">
+          Assign room types to each of your uploaded images. This helps buyers
+          understand what they're looking at.
+        </p>
+
+        {/* Regular Images */}
         {formData.regularImages.length > 0 && (
-          <div className="mt-4 space-y-4">
-            <h4 className="text-vista-primary text-sm font-medium">
-              Uploaded Images
+          <div className="mb-6">
+            <h4 className="text-vista-primary mb-3 font-medium">
+              Regular Images
             </h4>
             <div className="grid grid-cols-2 gap-4">
               {formData.regularImages.map((imageObj, idx) => (
                 <div key={idx} className="space-y-2">
-                  <div className="group relative">
-                    <img
-                      src={URL.createObjectURL(imageObj.file)}
-                      alt=""
-                      className="h-32 w-full rounded-lg object-cover"
-                    />
-                    <button
-                      onClick={() => onRemoveImage("regularImages", idx)}
-                      className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
+                  <img
+                    src={URL.createObjectURL(imageObj.file)}
+                    alt=""
+                    className="h-32 w-full rounded-lg object-cover"
+                  />
                   <select
                     value={imageObj.label}
                     onChange={(e) =>
                       onUpdateImageLabel(
                         "regularImages",
                         idx,
-                        e.target.value as RoomType | ""
+                        e.target.value as RoomType
                       )
                     }
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
-                    required
                   >
-                    <option value="" disabled hidden>
-                      Select room type...
-                    </option>
+                    <option value="">Select room type...</option>
                     <option value="Living Room">Living Room</option>
                     <option value="Kitchen">Kitchen</option>
                     <option value="Master Bedroom">Master Bedroom</option>
@@ -104,69 +71,33 @@ export function ImageStep({
             </div>
           </div>
         )}
-      </div>
 
-      {/* Panoramic Images */}
-      <div>
-        <label className="text-vista-text mb-3 block text-sm font-medium">
-          Panoramic Images (360°)
-        </label>
-        <div className="border-vista-surface/40 hover:border-vista-accent cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors">
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={(e) =>
-              onFileUpload("panoramicImages", e.target.files, "")
-            }
-            className="hidden"
-            id="panoramic-upload"
-          />
-          <label htmlFor="panoramic-upload" className="cursor-pointer">
-            <p className="text-vista-text/70 text-sm">
-              Upload 360° panoramic views
-            </p>
-            <p className="text-vista-text/50 mt-1 text-xs">
-              Provide immersive property tours
-            </p>
-          </label>
-        </div>
+        {/* Panoramic Images */}
         {formData.panoramicImages.length > 0 && (
-          <div className="mt-4 space-y-4">
-            <h4 className="text-vista-primary text-sm font-medium">
+          <div>
+            <h4 className="text-vista-primary mb-3 font-medium">
               360° Panoramic Images
             </h4>
             <div className="grid grid-cols-2 gap-4">
               {formData.panoramicImages.map((imageObj, idx) => (
                 <div key={idx} className="space-y-2">
-                  <div className="group relative">
-                    <img
-                      src={URL.createObjectURL(imageObj.file)}
-                      alt=""
-                      className="h-32 w-full rounded-lg object-cover"
-                    />
-                    <button
-                      onClick={() => onRemoveImage("panoramicImages", idx)}
-                      className="absolute top-1 right-1 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
+                  <img
+                    src={URL.createObjectURL(imageObj.file)}
+                    alt=""
+                    className="h-32 w-full rounded-lg object-cover"
+                  />
                   <select
                     value={imageObj.label}
                     onChange={(e) =>
                       onUpdateImageLabel(
                         "panoramicImages",
                         idx,
-                        e.target.value as RoomType | ""
+                        e.target.value as RoomType
                       )
                     }
-                    required
                     className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                   >
-                    <option value="" disabled hidden>
-                      Select room type...
-                    </option>
+                    <option value="">Select room type...</option>
                     <option value="Living Room">Living Room</option>
                     <option value="Kitchen">Kitchen</option>
                     <option value="Master Bedroom">Master Bedroom</option>

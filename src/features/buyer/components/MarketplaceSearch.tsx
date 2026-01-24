@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export interface PropertyFilters {
@@ -98,20 +98,6 @@ export function MarketplaceSearch({
     { label: "For Rent (Monthly)", min: 0, max: 100000 },
   ];
   const bedroomOptions = ["1", "2", "3", "4", "5+"];
-
-  // Auto-trigger search whenever filters change
-  useEffect(() => {
-    if (onSearch) {
-      const selectedPrice = priceRanges.find((p) => p.label === priceRange);
-      onSearch({
-        location: location || "",
-        propertyType: propertyType || "",
-        minPrice: selectedPrice?.min || 0,
-        maxPrice: selectedPrice?.max || Infinity,
-        bedrooms: bedrooms ? parseInt(bedrooms.replace("+", "")) : 0,
-      });
-    }
-  }, [location, propertyType, priceRange, bedrooms, onSearch, priceRanges]);
 
   const handleSearch = () => {
     if (onSearch) {

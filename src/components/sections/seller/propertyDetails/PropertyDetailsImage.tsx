@@ -13,6 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import type { Property, PropertyImage } from "../../../../types/property";
+import { patchProperty } from "../../../../services/propertyService";
 
 /**
  * Custom scrollbar styling for thumbnail image strip
@@ -211,20 +212,29 @@ export function PropertyDetailsImage({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const updatedProperty: Property = {
-      ...property,
-      images: editImages,
-      image: editImages.length > 0 ? editImages[thumbnailIndex] : null,
-      regularImageCount: editImages.filter((img) => img.imageType === "regular")
-        .length,
-      panoramicImageCount: editImages.filter(
-        (img) => img.imageType === "panoramic"
-      ).length,
-    };
-    onUpdate?.(updatedProperty);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (JSON.stringify(editImages) !== JSON.stringify(property.images))
+        changedFields.images = editImages;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   /**

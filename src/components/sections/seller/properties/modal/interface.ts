@@ -1,3 +1,25 @@
+export const ROOM_TYPES = [
+  "Living Room",
+  "Kitchen",
+  "Master Bedroom",
+  "Bedroom",
+  "Bathroom",
+  "Dining Room",
+  "Home Office",
+  "Balcony/Terrace",
+  "Garden/Yard",
+  "Garage",
+  "Hallway",
+  "Staircase",
+  "Basement",
+  "Attic",
+  "Laundry Room",
+  "Storage Room",
+  "Other",
+] as const;
+
+export type RoomType = (typeof ROOM_TYPES)[number];
+
 export interface PropertyFormData {
   name: string;
   propertyType: "House" | "Condo" | "Apartment" | "Lot" | "Commercial" | "";
@@ -7,8 +29,9 @@ export interface PropertyFormData {
   longitude: string;
   price: string;
   priceNegotiable: boolean;
-  regularImages: File[];
-  panoramicImages: File[];
+  regularImages: Array<{ file: File; label: RoomType | "" }>;
+  panoramicImages: Array<{ file: File; label: RoomType | "" }>;
+  selectedThumbnailIndex: number | null; // Index of selected thumbnail from regularImages
   bedrooms: string;
   bathrooms: string;
   floorArea: string;
@@ -50,13 +73,13 @@ export interface PropertyFormData {
   developerEmail: string;
   developerYears: string;
   developerBio: string;
+  image?: File; // Main image file for thumbnail upload
 }
-
 
 export interface AddPropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (propertyData: PropertyFormData) => void;
+  onSubmit: (propertyData: PropertyFormData) => void | Promise<void>;
 }
 
 export interface StepProps {
@@ -65,10 +88,18 @@ export interface StepProps {
   onArrayToggle: (field: keyof PropertyFormData, item: string) => void;
   onFileUpload: (
     field: "regularImages" | "panoramicImages",
-    files: FileList | null
+    files: FileList | null,
+    label?: RoomType | ""
   ) => void;
   onRemoveImage: (
     field: "regularImages" | "panoramicImages",
     index: number
   ) => void;
+  onUpdateImageLabel: (
+    field: "regularImages" | "panoramicImages",
+    index: number,
+    label: RoomType | ""
+  ) => void;
+  onSelectThumbnail: (index: number | null) => void;
+  validationErrors: Record<string, string>;
 }

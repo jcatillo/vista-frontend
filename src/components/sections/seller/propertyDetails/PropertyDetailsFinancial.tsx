@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsFinancialProps {
   property: Property;
@@ -27,11 +27,35 @@ export function PropertyDetailsFinancial({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    Object.assign(propertyDatabase[property.id], formData);
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (formData.ownershipStatus !== property.ownershipStatus)
+        changedFields.ownershipStatus = formData.ownershipStatus;
+      if (formData.taxStatus !== property.taxStatus)
+        changedFields.taxStatus = formData.taxStatus;
+      if (formData.associationDues !== property.associationDues)
+        changedFields.associationDues = formData.associationDues;
+      if (JSON.stringify(formData.terms) !== JSON.stringify(property.terms))
+        changedFields.terms = formData.terms;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {

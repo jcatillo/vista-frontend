@@ -8,6 +8,8 @@ import PropertyDetailsPage from "./pages/SellerPropertyDetailsPage";
 import VRViewerPage from "./pages/VRViewerPage";
 import Marketplace from "./pages/buyer/Marketplace";
 import BuyerLogin from "./pages/buyer/BuyerLogin";
+import BuyerPropertyDetails from "./pages/buyer/BuyerPropertyDetails";
+import { BuyerLayout } from "./pages/buyer/BuyerLayout";
 
 export default createBrowserRouter([
   {
@@ -38,7 +40,15 @@ export default createBrowserRouter([
     path: "/vr-viewer/:id",
     Component: VRViewerPage,
   },
-  { path: "/buyer", Component: Marketplace },
+  // Buyer landing page (no MarkAI)
   { path: "/buyer", Component: BuyerLogin },
-  { path: "/buyer/marketplace", Component: Marketplace },
+  // Buyer pages with MarkAI
+  {
+    path: "/buyer",
+    Component: BuyerLayout,
+    children: [
+      { path: "marketplace", Component: Marketplace },
+      { path: "property/:id", Component: BuyerPropertyDetails },
+    ],
+  },
 ]);

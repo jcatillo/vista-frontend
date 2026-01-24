@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Edit2, Check, X, Map as MapIcon } from "lucide-react";
 import { useState } from "react";
 import type { Property } from "../../../../types/property";
-import { propertyDatabase } from "../../../../data/properties";
+import { patchProperty } from "../../../../services/propertyService";
 
 interface PropertyDetailsLocationProps {
   property: Property;
@@ -20,11 +20,33 @@ export function PropertyDetailsLocation({
 
   const handleSave = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    Object.assign(propertyDatabase[property.id], formData);
-    onUpdate?.(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      // Only send changed fields
+      const changedFields: Partial<Property> = {};
+      if (formData.address !== property.address)
+        changedFields.address = formData.address;
+      if (formData.latitude !== property.latitude)
+        changedFields.latitude = formData.latitude;
+      if (formData.longitude !== property.longitude)
+        changedFields.longitude = formData.longitude;
+
+      if (Object.keys(changedFields).length > 0) {
+        const updatedProperty = await patchProperty(
+          property.propertyId,
+          changedFields
+        );
+        onUpdate?.(updatedProperty);
+      } else {
+        // No changes, just close edit mode
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error("Failed to update property:", error);
+      // TODO: Show error toast
+    } finally {
+      setIsSaving(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -45,17 +67,17 @@ export function PropertyDetailsLocation({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="bg-white shadow-soft rounded-2xl border border-white/50 overflow-hidden p-6 md:p-8"
+        className="shadow-soft overflow-hidden rounded-2xl border border-white/50 bg-white p-6 md:p-8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h2 className="text-vista-primary text-xl font-bold">Location</h2>
         </div>
 
         {/* Toggle between Address and Map */}
-        <div className="flex gap-2 mb-6">
+        <div className="mb-6 flex gap-2">
           <button
             onClick={() => setInputMode("address")}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+            className={`flex-1 rounded-lg px-4 py-2 font-medium transition-colors ${
               inputMode === "address"
                 ? "bg-vista-primary text-white"
                 : "bg-vista-surface/30 text-vista-text hover:bg-vista-surface/50"
@@ -65,7 +87,7 @@ export function PropertyDetailsLocation({
           </button>
           <button
             onClick={() => setInputMode("map")}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+            className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 font-medium transition-colors ${
               inputMode === "map"
                 ? "bg-vista-primary text-white"
                 : "bg-vista-surface/30 text-vista-text hover:bg-vista-surface/50"
@@ -79,7 +101,7 @@ export function PropertyDetailsLocation({
         {/* Address Input Mode */}
         {inputMode === "address" && (
           <div className="mb-6">
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Address
             </label>
             <textarea
@@ -91,7 +113,7 @@ export function PropertyDetailsLocation({
                 }))
               }
               rows={3}
-              className="w-full px-4 py-2 rounded-lg border border-vista-surface/30 focus:border-vista-accent focus:outline-none transition-colors resize-none"
+              className="border-vista-surface/30 focus:border-vista-accent w-full resize-none rounded-lg border px-4 py-2 transition-colors focus:outline-none"
               placeholder="Enter property address"
             />
           </div>
@@ -100,36 +122,36 @@ export function PropertyDetailsLocation({
         {/* Map Input Mode */}
         {inputMode === "map" && (
           <div className="mb-6">
-            <label className="block text-vista-text/70 text-sm font-medium mb-2">
+            <label className="text-vista-text/70 mb-2 block text-sm font-medium">
               Click on the map to select coordinates
             </label>
             <div
               onClick={handleMapClick}
-              className="w-full h-96 rounded-lg border-2 border-vista-surface/30 bg-vista-surface/10 flex items-center justify-center cursor-pointer hover:border-vista-accent transition-colors"
+              className="border-vista-surface/30 bg-vista-surface/10 hover:border-vista-accent flex h-96 w-full cursor-pointer items-center justify-center rounded-lg border-2 transition-colors"
             >
               <div className="text-center">
-                <MapIcon className="h-12 w-12 text-vista-accent/50 mx-auto mb-2" />
+                <MapIcon className="text-vista-accent/50 mx-auto mb-2 h-12 w-12" />
                 <p className="text-vista-text/60 text-sm">
                   Interactive map selection coming soon
                 </p>
-                <p className="text-vista-text/40 text-xs mt-1">
+                <p className="text-vista-text/40 mt-1 text-xs">
                   Currently showing embed preview
                 </p>
               </div>
             </div>
-            <div className="mt-4 p-4 bg-vista-accent/10 rounded-lg">
-              <p className="text-sm text-vista-text/70">
-                <strong>Tip:</strong> You can enter your address above or use the map
-                to find the exact location by clicking on it.
+            <div className="bg-vista-accent/10 mt-4 rounded-lg p-4">
+              <p className="text-vista-text/70 text-sm">
+                <strong>Tip:</strong> You can enter your address above or use
+                the map to find the exact location by clicking on it.
               </p>
             </div>
           </div>
         )}
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           <button
             onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 transition-colors font-medium"
+            className="border-vista-surface/30 text-vista-text hover:bg-vista-surface/10 flex items-center gap-2 rounded-lg border px-4 py-2 font-medium transition-colors"
           >
             <X className="h-4 w-4" />
             Cancel
@@ -137,7 +159,7 @@ export function PropertyDetailsLocation({
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-vista-primary hover:bg-vista-primary/90 text-white font-medium transition-colors disabled:opacity-50"
+            className="bg-vista-primary hover:bg-vista-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-white transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
             {isSaving ? "Saving..." : "Save"}
@@ -152,13 +174,13 @@ export function PropertyDetailsLocation({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.5 }}
-      className="bg-white shadow-soft rounded-2xl border border-white/50 overflow-hidden"
+      className="shadow-soft overflow-hidden rounded-2xl border border-white/50 bg-white"
     >
-      <div className="flex items-center justify-between p-6 md:p-8 pb-3">
+      <div className="flex items-center justify-between p-6 pb-3 md:p-8">
         <h2 className="text-vista-primary text-xl font-bold">Location</h2>
         <button
           onClick={() => setIsEditing(true)}
-          className="p-2 text-vista-accent hover:bg-vista-accent/10 rounded-lg transition-colors"
+          className="text-vista-accent hover:bg-vista-accent/10 rounded-lg p-2 transition-colors"
           title="Edit this section"
         >
           <Edit2 className="h-5 w-5" />
