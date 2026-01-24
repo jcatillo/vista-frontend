@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import { MarkAI } from "../../components/chatbot/MarkAI";
-import { MarkAIProvider } from "../../context/MarkAIContext";
+import { MarkAI } from "../../features/mark/MarkAI";
+import { MarkAIProvider } from "../../context/MarkAIProvider";
 
 export function BuyerLayout() {
   return (
