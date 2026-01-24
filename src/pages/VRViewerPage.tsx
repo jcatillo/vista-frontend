@@ -233,6 +233,30 @@ export default function VRViewerPage() {
     };
   }, []);
 
+  // Ensure full screen without scrolling
+  useEffect(() => {
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.width = '100%';
+    document.documentElement.style.height = '100vh';
+    document.documentElement.style.overflow = 'hidden';
+    
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.width = '100%';
+    document.body.style.height = '100vh';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+      document.body.style.position = 'relative';
+      document.body.style.touchAction = 'auto';
+    };
+  }, []);
+
   // Lock to landscape on mobile and detect orientation
   useEffect(() => {
     if (isMobileDevice()) {
@@ -285,6 +309,9 @@ export default function VRViewerPage() {
         ).requestPermission();
         console.log("Permission result:", permission);
         setOrientationPermission(permission);
+        if (permission === 'granted') {
+          setInputMode('voice');
+        }
       } catch (err) {
         console.error("Orientation permission error:", err);
         setOrientationPermission("denied");
@@ -634,8 +661,7 @@ export default function VRViewerPage() {
                 {property.name} - VR Experience
               </h1>
               <p className="text-sm text-white/70">
-                {panoramicImages.length} panoramic view
-                {panoramicImages.length !== 1 ? "s" : ""} available
+                {panoramicImages[currentImageIndex].title || "Unlabeled Room"}
               </p>
             </div>
           </div>
