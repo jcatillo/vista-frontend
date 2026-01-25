@@ -7,6 +7,7 @@ import {
   LogOut,
   X,
   Search,
+  Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -286,6 +287,24 @@ export default function Marketplace() {
           >
             Filter
             <Search className="h-5 w-5 text-gray-700" />
+          </button>
+
+          {/* Messages (mobile) */}
+          <button
+            onClick={() => navigate("/buyer/messages")}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 transition-all hover:shadow-md sm:hidden"
+            aria-label="Messages"
+          >
+            <Mail className="h-4 w-4" />
+          </button>
+
+          {/* Messages (desktop) */}
+          <button
+            onClick={() => navigate("/buyer/messages")}
+            className="hidden h-9 items-center justify-center rounded-full border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition-all hover:shadow-md sm:flex"
+            aria-label="Messages"
+          >
+            <Mail className="h-4 w-4" />
           </button>
 
           {/* Profile Dropdown */}

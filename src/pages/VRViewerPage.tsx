@@ -1,10 +1,69 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, RotateCcw, Mic, Menu, X } from "lucide-react";
+import { ChevronLeft, RotateCcw, Mic, Menu, X, ShoppingBag, ExternalLink, Save } from "lucide-react";
 import { type Property } from "../types/property";
 import { useState, useEffect } from "react";
 import { PanoramaViewer } from "../components/PanoramaViewer";
 import { useRef } from "react";
 import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+
+// Furniture data structure for AI Virtual Staging (matches API response)
+interface SearchLink {
+  price_bracket: string;
+  search_url: string;
+  shop: string;
+}
+
+interface ExtractedFurniture {
+  description: string;
+  item_type: string;
+  top_3_search_links: SearchLink[];
+}
+
+interface BudgetSummary {
+  strategy: string;
+  total_allocation: number;
+}
+
+interface FurnitureApiResponse {
+  budget_summary: BudgetSummary;
+  currency: string;
+  extracted_furniture: ExtractedFurniture[];
+  message: string;
+  success: boolean;
+  total_budget: number;
+}
+
+// Sample furniture data - this would come from AI staging results
+const sampleFurnitureData: FurnitureApiResponse = {
+  budget_summary: {
+    strategy: "The total budget of 50,000 PHP was dynamically split between the identified furniture items. A larger portion was allocated to the sofa (up to 35,000 PHP) as it typically represents a more significant investment, while the coffee table received a smaller allocation (up to 15,000 PHP).",
+    total_allocation: 50000
+  },
+  currency: "PHP",
+  extracted_furniture: [
+    {
+      description: "A multi-seater sofa with a contemporary design.",
+      item_type: "Sofa",
+      top_3_search_links: [
+        { price_bracket: "15000 - 35000", search_url: "https://mandauefoam.ph/search?q=Sofa&type=product", shop: "Mandaue Foam" },
+        { price_bracket: "15000 - 35000", search_url: "https://smhome.ph/search?q=Sofa&type=product", shop: "SM Home" },
+        { price_bracket: "15000 - 35000", search_url: "https://uratex.com.ph/search?type=product&q=Sofa", shop: "Uratex" }
+      ]
+    },
+    {
+      description: "A round coffee table with a sturdy base.",
+      item_type: "Coffee Table",
+      top_3_search_links: [
+        { price_bracket: "5000 - 15000", search_url: "https://mandauefoam.ph/search?q=Coffee%20Table&type=product", shop: "Mandaue Foam" },
+        { price_bracket: "5000 - 15000", search_url: "https://smhome.ph/search?q=Coffee%20Table&type=product", shop: "SM Home" },
+        { price_bracket: "5000 - 15000", search_url: "https://uratex.com.ph/search?type=product&q=Coffee%20Table", shop: "Uratex" }
+      ]
+    }
+  ],
+  message: "Successfully extracted furniture from image",
+  success: true,
+  total_budget: 50000
+};
 
 const isMobileDevice = () =>
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -32,6 +91,13 @@ export default function VRViewerPage() {
   const [inputMode, setInputMode] = useState<'voice' | 'typing' | null>(null);
   const [typedCommand, setTypedCommand] = useState<string>('');
   const [showGalleryMenu, setShowGalleryMenu] = useState(false);
+  const [showFurnitureMenu, setShowFurnitureMenu] = useState(false);
+  const [furnitureData] = useState<FurnitureApiResponse>(sampleFurnitureData);
+  const [setupStep, setSetupStep] = useState<'budget' | 'input-mode' | 'done'>('budget');
+  const [budget, setBudget] = useState<number>(50000);
+  const [budgetInput, setBudgetInput] = useState<string>('50000');
+  const MIN_BUDGET = 10000;
+  const MAX_BUDGET = 500000;
   
   // React Speech Recognition hook
   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } = useSpeechRecognition();
@@ -390,25 +456,121 @@ export default function VRViewerPage() {
       {/** Combined voice active state for Porcupine or Web Speech */}
       {/** Decide active state before JSX to reduce duplication */}
 
-      {/* Input Mode Selection - Show on first visit (desktop only) */}
-      {!isMobile && inputMode === null && (
+      {/* Budget Input - First step */}
+      {!isMobile && setupStep === 'budget' && (
         <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-white p-8">
+          <h2 className="text-3xl font-bold mb-2 text-center">Set Your Budget</h2>
+          <p className="text-white/70 text-center mb-8">What's your estimated budget for furniture staging?</p>
+          
+          <div className="w-full max-w-md space-y-6">
+            {/* Budget Display */}
+            <div className="text-center">
+              <span className="text-5xl font-bold text-vista-accent">
+                ₱{budget.toLocaleString()}
+              </span>
+            </div>
+            
+            {/* Range Slider */}
+            <div className="space-y-2">
+              <input
+                type="range"
+                min={MIN_BUDGET}
+                max={MAX_BUDGET}
+                step={1000}
+                value={budget}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  setBudget(val);
+                  setBudgetInput(val.toString());
+                }}
+                className="w-full h-3 bg-white/20 rounded-lg appearance-none cursor-pointer accent-vista-accent"
+                style={{
+                  background: `linear-gradient(to right, #FFB800 0%, #FFB800 ${((budget - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100}%, rgba(255,255,255,0.2) ${((budget - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100}%, rgba(255,255,255,0.2) 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-white/50">
+                <span>₱{MIN_BUDGET.toLocaleString()}</span>
+                <span>₱{MAX_BUDGET.toLocaleString()}</span>
+              </div>
+            </div>
+            
+            {/* Manual Input */}
+            <div className="flex items-center gap-3">
+              <span className="text-white/70 text-sm">Or enter amount:</span>
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50">₱</span>
+                <input
+                  type="text"
+                  value={budgetInput}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    setBudgetInput(raw);
+                    const val = parseInt(raw) || MIN_BUDGET;
+                    if (val >= MIN_BUDGET && val <= MAX_BUDGET) {
+                      setBudget(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    const val = parseInt(budgetInput) || MIN_BUDGET;
+                    const clamped = Math.max(MIN_BUDGET, Math.min(MAX_BUDGET, val));
+                    setBudget(clamped);
+                    setBudgetInput(clamped.toString());
+                  }}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 pl-8 text-white focus:outline-none focus:border-vista-accent"
+                  placeholder="50000"
+                />
+              </div>
+            </div>
+            
+            {/* Continue Button */}
+            <button
+              onClick={() => setSetupStep('input-mode')}
+              className="w-full px-8 py-4 bg-vista-accent text-black rounded-lg font-semibold hover:bg-vista-accent/80 transition-colors mt-4"
+            >
+              Continue
+            </button>
+            
+            <p className="text-white/40 text-xs text-center">
+              Minimum budget: ₱{MIN_BUDGET.toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Input Mode Selection - Second step (desktop only) */}
+      {!isMobile && setupStep === 'input-mode' && inputMode === null && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-white p-8">
+          <div className="mb-4 px-4 py-2 bg-vista-accent/20 rounded-full">
+            <span className="text-vista-accent text-sm font-medium">Budget: ₱{budget.toLocaleString()}</span>
+          </div>
           <h2 className="text-3xl font-bold mb-4 text-center">Choose Input Method</h2>
           <p className="text-white/70 text-center mb-8">How would you like to navigate?</p>
           <div className="flex gap-6">
             <button
-              onClick={() => setInputMode('voice')}
+              onClick={() => {
+                setInputMode('voice');
+                setSetupStep('done');
+              }}
               className="px-8 py-4 bg-vista-accent text-black rounded-lg font-semibold hover:bg-vista-accent/80 transition-colors"
             >
               🎤 Voice Commands (Echo)
             </button>
             <button
-              onClick={() => setInputMode('typing')}
+              onClick={() => {
+                setInputMode('typing');
+                setSetupStep('done');
+              }}
               className="px-8 py-4 bg-white/20 text-white rounded-lg font-semibold hover:bg-white/30 transition-colors"
             >
               ⌨️ Type Commands
             </button>
           </div>
+          <button
+            onClick={() => setSetupStep('budget')}
+            className="mt-6 text-white/50 hover:text-white/70 text-sm transition-colors"
+          >
+            ← Change budget
+          </button>
         </div>
       )}
 
@@ -426,10 +588,37 @@ export default function VRViewerPage() {
 
       {/* Mobile/Desktop Hamburger Menu Button (All modes) */}
       {inputMode !== null && (
-        <div className={`absolute ${isMobile ? 'top-2 right-2' : 'top-2 right-2'} z-30`}>
+        <div className={`absolute ${isMobile ? 'top-2 right-2' : 'top-2 right-2'} z-30 flex gap-2`}>
+          {/* Save Changes Button */}
           <button
-            onClick={() => setShowGalleryMenu(!showGalleryMenu)}
+            onClick={() => {
+              // Handle save changes logic
+              console.log('Save changes clicked');
+            }}
             className="bg-vista-accent text-black p-2 rounded-lg hover:opacity-90"
+            title="Save Changes"
+          >
+            <Save size={20} />
+          </button>
+          {/* Furniture Summary Button */}
+          <button
+            onClick={() => {
+              setShowFurnitureMenu(!showFurnitureMenu);
+              setShowGalleryMenu(false);
+            }}
+            className="bg-vista-accent text-black p-2 rounded-lg hover:opacity-90"
+            title="Furniture Summary"
+          >
+            <ShoppingBag size={20} />
+          </button>
+          {/* Gallery Menu Button */}
+          <button
+            onClick={() => {
+              setShowGalleryMenu(!showGalleryMenu);
+              setShowFurnitureMenu(false);
+            }}
+            className="bg-vista-accent text-black p-2 rounded-lg hover:opacity-90"
+            title="Panoramic Views"
           >
             {showGalleryMenu ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -454,8 +643,86 @@ export default function VRViewerPage() {
         </div>
       )}
 
+      {/* Mobile Budget Input - First step */}
+      {isMobile && setupStep === 'budget' && !isPortrait && (
+        <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center text-white p-6">
+          <h2 className="text-2xl font-bold mb-2 text-center">Set Your Budget</h2>
+          <p className="text-white/70 text-center mb-6 text-sm">Estimated budget for furniture staging</p>
+          
+          <div className="w-full max-w-sm space-y-5">
+            {/* Budget Display */}
+            <div className="text-center">
+              <span className="text-4xl font-bold text-vista-accent">
+                ₱{budget.toLocaleString()}
+              </span>
+            </div>
+            
+            {/* Range Slider */}
+            <div className="space-y-2">
+              <input
+                type="range"
+                min={MIN_BUDGET}
+                max={MAX_BUDGET}
+                step={1000}
+                value={budget}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  setBudget(val);
+                  setBudgetInput(val.toString());
+                }}
+                className="w-full h-3 bg-white/20 rounded-lg appearance-none cursor-pointer accent-vista-accent"
+                style={{
+                  background: `linear-gradient(to right, #FFB800 0%, #FFB800 ${((budget - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100}%, rgba(255,255,255,0.2) ${((budget - MIN_BUDGET) / (MAX_BUDGET - MIN_BUDGET)) * 100}%, rgba(255,255,255,0.2) 100%)`
+                }}
+              />
+              <div className="flex justify-between text-xs text-white/50">
+                <span>₱{MIN_BUDGET.toLocaleString()}</span>
+                <span>₱{MAX_BUDGET.toLocaleString()}</span>
+              </div>
+            </div>
+            
+            {/* Manual Input */}
+            <div className="flex items-center gap-2">
+              <span className="text-white/70 text-xs">Or enter:</span>
+              <div className="flex-1 relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50 text-sm">₱</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={budgetInput}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    setBudgetInput(raw);
+                    const val = parseInt(raw) || MIN_BUDGET;
+                    if (val >= MIN_BUDGET && val <= MAX_BUDGET) {
+                      setBudget(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    const val = parseInt(budgetInput) || MIN_BUDGET;
+                    const clamped = Math.max(MIN_BUDGET, Math.min(MAX_BUDGET, val));
+                    setBudget(clamped);
+                    setBudgetInput(clamped.toString());
+                  }}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 pl-7 text-white text-sm focus:outline-none focus:border-vista-accent"
+                  placeholder="50000"
+                />
+              </div>
+            </div>
+            
+            {/* Continue Button */}
+            <button
+              onClick={() => setSetupStep('done')}
+              className="w-full px-6 py-3 bg-vista-accent text-black rounded-lg font-semibold hover:bg-vista-accent/80 transition-colors"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* iOS Permission Request */}
-      {isMobileDevice() && orientationPermission === 'prompt' && !isPortrait && (
+      {isMobileDevice() && setupStep === 'done' && orientationPermission === 'prompt' && !isPortrait && (
         <div className="absolute inset-0 z-50 bg-black/90 flex flex-col items-center justify-center text-white p-8">
           <h2 className="text-2xl font-bold mb-4 text-center">Enable Motion Controls</h2>
           <p className="text-white/70 text-center mb-6">Allow device motion to look around by moving your phone</p>
@@ -747,6 +1014,111 @@ export default function VRViewerPage() {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Furniture Summary Menu */}
+      {inputMode !== null && showFurnitureMenu && (
+        <div className={`absolute ${isMobile ? 'top-14 right-2 left-2' : 'top-14 right-2'} z-30 bg-[#0f172a]/95 border border-white/10 rounded-xl shadow-2xl max-h-[70vh] overflow-y-auto ${isMobile ? 'w-auto' : 'w-[520px]'}`}>
+          <div className="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0f172a]/95 backdrop-blur-sm">
+            <div className="flex items-center gap-2">
+              <ShoppingBag size={18} className="text-vista-accent" />
+              <h3 className="text-white font-semibold text-sm">AI Staging - Furniture Summary</h3>
+            </div>
+            <button
+              onClick={() => setShowFurnitureMenu(false)}
+              className="text-white/50 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          
+          <div className="p-3 space-y-4">
+            {/* Extracted Furniture Items */}
+            {furnitureData.extracted_furniture.map((item, itemIdx) => (
+              <div key={itemIdx} className="border border-white/10 rounded-lg overflow-hidden">
+                {/* Item Header */}
+                <div className="bg-white/5 px-3 py-2 border-b border-white/10">
+                  <h4 className="text-vista-accent font-bold text-sm tracking-wide">{item.item_type.toUpperCase()}</h4>
+                  <p className="text-white/60 text-xs mt-1">{item.description}</p>
+                </div>
+                
+                {/* Table Header */}
+                <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-white/5 text-xs font-semibold text-white/70 border-b border-white/10">
+                  <div className="col-span-5">Shop</div>
+                  <div className="col-span-5">Price Range</div>
+                  <div className="col-span-2">Link</div>
+                </div>
+                
+                {/* Shop Links */}
+                <div className="divide-y divide-white/5">
+                  {item.top_3_search_links.map((link, linkIdx) => (
+                    <div key={linkIdx} className="grid grid-cols-12 gap-2 px-3 py-2.5 text-xs hover:bg-white/5 transition-colors items-center">
+                      <div className="col-span-5 text-white font-medium truncate" title={link.shop}>
+                        {link.shop}
+                      </div>
+                      <div className="col-span-5 text-vista-accent font-semibold">
+                        ₱{link.price_bracket.replace(' - ', ' - ₱')}
+                      </div>
+                      <div className="col-span-2">
+                        <a
+                          href={link.search_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-vista-accent hover:text-white transition-colors"
+                        >
+                          <ExternalLink size={12} />
+                          <span className="hidden md:inline">Shop</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            
+            {/* Budget Summary */}
+            <div className="border border-vista-accent/30 rounded-lg p-3 bg-vista-accent/5 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-white/70 text-sm">Your Budget:</span>
+                <span className="text-white font-semibold">
+                  ₱{budget.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-white/70 text-sm">AI Allocation:</span>
+                <span className="text-vista-accent font-bold">
+                  ₱{furnitureData.budget_summary.total_allocation.toLocaleString()}
+                </span>
+              </div>
+              <div className="border-t border-white/10 pt-3">
+                {(() => {
+                  const totalAllocation = furnitureData.budget_summary.total_allocation;
+                  const remaining = budget - totalAllocation;
+                  const isOver = remaining < 0;
+                  return (
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-medium text-sm">Remaining Budget:</span>
+                      <span className={`font-bold text-lg ${isOver ? 'text-red-400' : 'text-green-400'}`}>
+                        {isOver ? '-' : ''}₱{Math.abs(remaining).toLocaleString()}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              {/* AI Strategy */}
+              <div className="border-t border-white/10 pt-3">
+                <p className="text-white/50 text-xs leading-relaxed">
+                  <span className="text-white/70 font-medium">AI Strategy:</span> {furnitureData.budget_summary.strategy}
+                </p>
+              </div>
+              
+              <p className="text-white/40 text-xs">
+                * Click shop links to browse furniture within your price range.
+              </p>
+            </div>
           </div>
         </div>
       )}

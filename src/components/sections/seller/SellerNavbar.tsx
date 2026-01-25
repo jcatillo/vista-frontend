@@ -44,9 +44,7 @@ export function SellerNavbar() {
       
       {/* Navbar Container */}
       <nav
-        className={`z-50 w-full flex justify-center ${
-          isScrolled ? "fixed left-1/2 top-6 -translate-x-1/2 md:top-8" : "absolute left-1/2 -translate-x-1/2 -translate-y-full"
-        }`}
+        className="z-50 w-full flex justify-center fixed left-1/2 top-6 -translate-x-1/2 md:top-8"
       >
         {/* Floating Glass Nav */}
         <div
