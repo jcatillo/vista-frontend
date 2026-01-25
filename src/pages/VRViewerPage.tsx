@@ -754,7 +754,7 @@ export default function VRViewerPage() {
       {/** Decide active state before JSX to reduce duplication */}
 
       {/* Budget Input - First step */}
-      {!isMobile && setupStep === "budget" && (
+      {setupStep === "budget" && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-8 text-white">
           <h2 className="mb-2 text-center text-3xl font-bold">
             Set Your Budget
@@ -847,7 +847,7 @@ export default function VRViewerPage() {
       )}
 
       {/* Input Mode Selection - Second step (desktop only) */}
-      {!isMobile && setupStep === "input-mode" && inputMode === null && (
+      {setupStep === "input-mode" && inputMode === null && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-8 text-white">
           <div className="bg-vista-accent/20 mb-4 rounded-full px-4 py-2">
             <span className="text-vista-accent text-sm font-medium">
@@ -1264,7 +1264,7 @@ export default function VRViewerPage() {
       {browserSupportsSpeechRecognition &&
         inputMode === "voice" &&
         !voiceActive &&
-        (!isMobile || (orientationPermission === "granted" && !isPortrait)) && (
+        ((orientationPermission === "granted" && !isPortrait)) && (
           <div className="pointer-events-auto absolute bottom-32 left-1/2 z-50 -translate-x-1/2">
             <button
               className="bg-vista-accent cursor-pointer rounded-full px-5 py-2 font-medium text-black shadow hover:opacity-90 active:opacity-80"
