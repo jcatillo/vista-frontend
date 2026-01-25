@@ -10,6 +10,7 @@ interface PanoramaViewerProps {
   onReady?: () => void;
   useDeviceOrientation?: boolean;
   vrMode?: boolean; // Enable side-by-side stereoscopic VR
+  stereo?: boolean; // Enable stereoscopic rendering (split-screen VR)
 }
 
 function PanoramaScene({ imageUrl, onTextureLoaded }: { imageUrl: string; onTextureLoaded?: () => void }) {
@@ -171,13 +172,95 @@ function DeviceOrientationController() {
   return null;
 }
 
+function SyncedOrbitControls({ targetRef }: { targetRef?: React.MutableRefObject<THREE.Euler | null> }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
+
+  useFrame(() => {
+    if (controlsRef.current && targetRef) {
+      targetRef.current = camera.rotation.clone();
+    }
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={true}
+      enablePan={false}
+      enableDamping={true}
+      dampingFactor={0.05}
+      autoRotate={false}
+      rotateSpeed={0.4}
+      zoomSpeed={1}
+    />
+  );
+}
+
+function SyncedCamera({ sharedRotation }: { sharedRotation: React.MutableRefObject<THREE.Euler | null> }) {
+  const { camera } = useThree();
+
+  useFrame(() => {
+    if (sharedRotation.current) {
+      camera.rotation.copy(sharedRotation.current);
+    }
+  });
+
+  return null;
+}
+
 export function PanoramaViewer({
   imageUrl,
   width = "100%",
   height = "100%",
   onReady,
   useDeviceOrientation = false,
+  stereo = false,
 }: PanoramaViewerProps) {
+  const sharedRotation = useRef<THREE.Euler | null>(null);
+
+  if (stereo) {
+    // Stereoscopic split-screen rendering for VR headsets
+    // Both eyes move together with shared rotation, only X position differs for IPD
+    return (
+      <div style={{ width, height, touchAction: "none", position: "relative", display: "flex", overflow: "hidden", backgroundColor: "black" }}>
+        {/* Left Eye */}
+        <div style={{ width: "50%", height: "100%", position: "relative" }}>
+          <Canvas
+            camera={{ position: [-0.03, 0, 0.1], fov: 75 }}
+            style={{ width: "100%", height: "100%", display: "block" }}
+            gl={{ antialias: true }}
+          >
+            <PanoramaScene imageUrl={imageUrl} onTextureLoaded={onReady} />
+            {useDeviceOrientation ? (
+              <DeviceOrientationController />
+            ) : (
+              <SyncedOrbitControls targetRef={sharedRotation} />
+            )}
+            <Preload all />
+          </Canvas>
+        </div>
+
+        {/* Right Eye */}
+        <div style={{ width: "50%", height: "100%", position: "relative", borderLeft: "2px solid rgba(255,255,255,0.05)" }}>
+          <Canvas
+            camera={{ position: [0.03, 0, 0.1], fov: 75 }}
+            style={{ width: "100%", height: "100%", display: "block" }}
+            gl={{ antialias: true }}
+          >
+            <PanoramaScene imageUrl={imageUrl} onTextureLoaded={onReady} />
+            {useDeviceOrientation ? (
+              <DeviceOrientationController />
+            ) : (
+              <SyncedCamera sharedRotation={sharedRotation} />
+            )}
+            <Preload all />
+          </Canvas>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular 360° mode
   return (
     <div style={{ width, height, touchAction: "none", position: "relative" }}>
       <Canvas
