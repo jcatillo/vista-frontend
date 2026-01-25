@@ -133,7 +133,7 @@ function PropertyDetails({ property }: { property: Property }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.25 }}
-      className="shadow-vista-primary/5 space-y-5 rounded-2xl bg-white p-6 shadow-sm"
+      className="space-y-5"
     >
       <h2 className="text-vista-primary text-xl font-semibold">Details</h2>
       <div className="grid grid-cols-2 gap-x-12 gap-y-4">

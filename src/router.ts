@@ -5,11 +5,13 @@ import SellerLoginPage from "./pages/SellerLoginPage";
 import SellerDashboard from "./pages/SellerDashboard";
 import SellerPropertiesPage from "./pages/SellerPropertiesPage";
 import PropertyDetailsPage from "./pages/SellerPropertyDetailsPage";
+import SellerMessagesPage from "./pages/SellerMessagesPage";
 import VRViewerPage from "./pages/VRViewerPage";
 import Marketplace from "./pages/buyer/Marketplace";
 import BuyerLogin from "./pages/buyer/BuyerLogin";
 import BuyerPropertyDetails from "./pages/buyer/BuyerPropertyDetails";
 import { BuyerLayout } from "./pages/buyer/BuyerLayout";
+import BuyerMessages from "./pages/buyer/BuyerMessages";
 
 export default createBrowserRouter([
   {
@@ -37,6 +39,10 @@ export default createBrowserRouter([
     Component: PropertyDetailsPage,
   },
   {
+    path: "/seller/messages",
+    Component: SellerMessagesPage,
+  },
+  {
     path: "/vr-viewer/:id",
     Component: VRViewerPage,
   },
@@ -49,6 +55,7 @@ export default createBrowserRouter([
     children: [
       { path: "marketplace", Component: Marketplace },
       { path: "property/:id", Component: BuyerPropertyDetails },
+      { path: "messages", Component: BuyerMessages },
     ],
   },
 ]);
