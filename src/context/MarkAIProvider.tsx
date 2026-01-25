@@ -82,7 +82,9 @@ export function MarkAIProvider({ children }: { children: ReactNode }) {
   };
 
   const notifyPropertyView = async (propertyId: string) => {
-    setIsOpen(true);
+    if (window.innerWidth >= 768) {
+      setIsOpen(true);
+    }
     setIsSummaryLoading(true);
 
     const formattedHistory = messages.slice(-20).map((msg) => ({
