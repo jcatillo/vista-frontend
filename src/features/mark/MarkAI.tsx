@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Send, MessageCircle } from "lucide-react";
 import axios from "axios";
@@ -72,7 +72,7 @@ function parseMessageContent(text: string): React.ReactNode[] {
     const { type, items } = currentList;
     if (type === "ul") {
       elements.push(
-        <ul key={`ul-${keyIndex}`} className="my-1 ml-4 list-disc space-y-0.5">
+        <ul key={`ul-${keyIndex}`} className="my-1 ml-6 list-disc space-y-0.5">
           {items}
         </ul>
       );
@@ -80,7 +80,7 @@ function parseMessageContent(text: string): React.ReactNode[] {
       elements.push(
         <ol
           key={`ol-${keyIndex}`}
-          className="my-1 ml-4 list-decimal space-y-0.5"
+          className="my-1 ml-6 list-decimal space-y-0.5"
         >
           {items}
         </ol>
@@ -92,16 +92,22 @@ function parseMessageContent(text: string): React.ReactNode[] {
   lines.forEach((line, index) => {
     const trimmedLine = line.trim();
 
-    // Check for numbered list: 1. item, 2. item, etc.
+    // 1. Skip completely empty lines, but DON'T close the list yet
+    if (trimmedLine === "") return;
+
+    // 2. Regex Patterns
     const numberedMatch = trimmedLine.match(/^(\d+)\.\s+(.+)$/);
-    // Check for bullet list: - item or * item (at start of line)
+    // This regex now handles bullets with leading spaces/indentation
     const bulletMatch = trimmedLine.match(/^[-*]\s+(.+)$/);
 
     if (numberedMatch) {
       const content = parseInlineFormatting(numberedMatch[2], index);
+
+      // If we are already in an OL, just add to it
       if (currentList?.type === "ol") {
         currentList.items.push(<li key={`li-${index}`}>{content}</li>);
       } else {
+        // If we were in a UL or nothing, close and start new OL
         closeCurrentList(index);
         currentList = {
           type: "ol",
@@ -110,7 +116,22 @@ function parseMessageContent(text: string): React.ReactNode[] {
       }
     } else if (bulletMatch) {
       const content = parseInlineFormatting(bulletMatch[1], index);
-      if (currentList?.type === "ul") {
+
+      // KEY FIX: If we are currently inside an 'ol', append the bullet
+      // to the LAST 'li' of that 'ol' instead of closing the list.
+      if (currentList?.type === "ol" && currentList.items.length > 0) {
+        const lastItemIndex = currentList.items.length - 1;
+        const lastItem = currentList.items[lastItemIndex];
+
+        currentList.items[lastItemIndex] = (
+          <React.Fragment key={`fragment-${index}`}>
+            {lastItem}
+            <ul className="mt-1 ml-6 list-[circle] space-y-0.5 opacity-90">
+              <li key={`nested-li-${index}`}>{content}</li>
+            </ul>
+          </React.Fragment>
+        );
+      } else if (currentList?.type === "ul") {
         currentList.items.push(<li key={`li-${index}`}>{content}</li>);
       } else {
         closeCurrentList(index);
@@ -120,14 +141,9 @@ function parseMessageContent(text: string): React.ReactNode[] {
         };
       }
     } else {
-      // Not a list item - close any open list
       closeCurrentList(index);
-
-      // Add regular line with inline formatting
       const parsedLine = parseInlineFormatting(line, index);
       elements.push(...parsedLine);
-
-      // Add line break after each line except the last (and not after lists)
       if (index < lines.length - 1) {
         elements.push(<br key={`br-${index}`} />);
       }
