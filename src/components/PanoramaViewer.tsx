@@ -222,11 +222,11 @@ export function PanoramaViewer({
     // Stereoscopic split-screen rendering for VR headsets
     // Both eyes move together with shared rotation, only X position differs for IPD
     return (
-      <div style={{ width, height, touchAction: "none", position: "relative", display: "flex", overflow: "hidden", backgroundColor: "black" }}>
+      <div style={{ width, height, touchAction: "none", position: "relative", display: "flex", overflow: "hidden", backgroundColor: "black", gap: "8px" }}>
         {/* Left Eye */}
-        <div style={{ width: "50%", height: "100%", position: "relative" }}>
+        <div style={{ flex: 1, height: "100%", position: "relative" }}>
           <Canvas
-            camera={{ position: [-0.03, 0, 0.1], fov: 75 }}
+            camera={{ position: [-0.065, 0, 0.1], fov: 75 }}
             style={{ width: "100%", height: "100%", display: "block" }}
             gl={{ antialias: true }}
           >
@@ -241,9 +241,9 @@ export function PanoramaViewer({
         </div>
 
         {/* Right Eye */}
-        <div style={{ width: "50%", height: "100%", position: "relative", borderLeft: "2px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ flex: 1, height: "100%", position: "relative" }}>
           <Canvas
-            camera={{ position: [0.03, 0, 0.1], fov: 75 }}
+            camera={{ position: [0.065, 0, 0.1], fov: 75 }}
             style={{ width: "100%", height: "100%", display: "block" }}
             gl={{ antialias: true }}
           >
